@@ -1,0 +1,56 @@
+<header class="rm-header" [class.is-stuck]="stuck()" [class.is-compact]="compact()">
+  <div class="rm-container rm-header__inner">
+
+    <a class="rm-brand" href="#home" (click)="onNavClick('home')">
+      <img src="/images/logo.png" width="500" height="392"
+           [alt]="site.name" fetchpriority="high">
+    </a>
+
+    <button class="rm-nav-toggle" type="button"
+            [attr.aria-expanded]="menuOpen()"
+            aria-controls="rm-primary-nav"
+            [attr.aria-label]="menuOpen() ? 'Close menu' : 'Open menu'"
+            (click)="toggleMenu()">
+      <span></span><span></span><span></span>
+    </button>
+
+    <nav class="rm-nav" id="rm-primary-nav" [class.is-open]="menuOpen()" aria-label="Primary">
+      <ul class="rm-nav__list">
+        @for (item of navItems; track item.id) {
+          <li [class.is-active]="activeId() === item.id">
+            <a [href]="'#' + item.id"
+               [attr.aria-current]="activeId() === item.id ? 'true' : null"
+               (click)="onNavClick(item.id)">{{ item.label }}</a>
+          </li>
+        }
+      </ul>
+
+      <div class="rm-nav__cta">
+        <a class="rm-btn rm-btn--ghost" [href]="telHref">
+          <span class="rm-btn__icon"><rm-icon name="phone" /></span>
+          {{ site.phone }}
+        </a>
+        <a class="rm-btn rm-btn--primary" [href]="site.estimateUrl" (click)="onNavClick('contact')">
+          Get a free estimate
+          <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="rm-header__aside">
+      <div class="rm-callbox">
+        <span class="rm-callbox__ring"><rm-icon name="phone" /></span>
+        <span>
+          <span class="rm-callbox__label">Call us today</span>
+          <a class="rm-callbox__number" [href]="telHref">{{ site.phone }}</a>
+        </span>
+      </div>
+
+      <a class="rm-btn rm-btn--primary rm-btn--sm" [href]="site.estimateUrl">
+        Get a free estimate
+        <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
+      </a>
+    </div>
+
+  </div>
+</header>

@@ -1,0 +1,34 @@
+# R&M Roofing Solutions — Angular front end.
+#
+#   docker compose up dev        live-reload dev server  -> http://localhost:4200
+#   docker compose up prod       production build, nginx -> http://localhost:8080
+#
+# Identical in PowerShell, CMD, bash and zsh. Nothing to chmod, no Node needed
+# on your machine.
+
+services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "${DEV_PORT:-4200}:4200"
+    volumes:
+      # Your editor edits the real files; the container reloads on save.
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./angular.json:/app/angular.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tsconfig.app.json:/app/tsconfig.app.json:ro
+      # Keep the container's node_modules; never shadow it with the host's.
+      - /app/node_modules
+    environment:
+      NG_CLI_ANALYTICS: "false"
+
+  prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${PROD_PORT:-8080}:80"
+    restart: unless-stopped

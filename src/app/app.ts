@@ -1,0 +1,34 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ViewportScroller } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+import { HeaderComponent } from './layout/header/header';
+import { FooterComponent } from './layout/footer/footer';
+
+@Component({
+  selector: 'app-root',
+  imports: [RouterOutlet, HeaderComponent, FooterComponent],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <a class="rm-skip-link" href="#rm-main">Skip to content</a>
+    <rm-header />
+    <main id="rm-main">
+      <router-outlet />
+    </main>
+    <rm-footer />
+  `,
+})
+export class App {
+  constructor() {
+    const scroller = inject(ViewportScroller);
+
+    // Angular's ViewportScroller jumps with window.scrollTo() and its own offset
+    // rather than element.scrollIntoView(), so the CSS `scroll-margin-top` on
+    // section ids is ignored entirely — anchors land at y=0, tucked behind the
+    // sticky header. Measuring the header at call time keeps this correct across
+    // breakpoints instead of hardcoding a number that drifts.
+    scroller.setOffset(() => {
+      const header = document.querySelector<HTMLElement>('.rm-header');
+      return [0, (header?.getBoundingClientRect().height ?? 104) + 16];
+    });
+  }
+}

@@ -1,0 +1,59 @@
+<footer class="rm-footer" id="contact">
+  <div class="rm-container rm-footer__grid">
+
+    <div class="rm-footer__brand">
+      <a href="#home">
+        <img src="/images/logo.png" width="500" height="392" [alt]="site.name" loading="lazy">
+      </a>
+      <p class="rm-footer__note">{{ site.motto }}</p>
+      <p class="rm-footer__note">{{ site.serviceArea }}</p>
+    </div>
+
+    <div>
+      <h2 class="rm-footer__title">Services</h2>
+      <ul class="rm-footer__list">
+        @for (service of services; track service.slug) {
+          <li><a href="#services">{{ service.title }}</a></li>
+        }
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="rm-footer__title">Company</h2>
+      <ul class="rm-footer__list">
+        <li><a href="#about">About us</a></li>
+        <li><a href="#work">Our work</a></li>
+        <li><a href="#reviews">Reviews</a></li>
+        <li><a href="#services">Financing</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="rm-footer__title">Get in touch</h2>
+      <ul class="rm-footer__list">
+        <li>
+          <a class="rm-footer__contact" [href]="telHref">
+            <rm-icon name="phone" /> {{ site.phone }}
+          </a>
+        </li>
+        <li>
+          <a class="rm-footer__contact" [href]="mailHref">
+            <rm-icon name="mail" /> {{ site.email }}
+          </a>
+        </li>
+        <li>
+          <span class="rm-footer__contact">
+            <rm-icon name="pin" /> {{ site.serviceArea }}
+          </span>
+        </li>
+        <li>{{ site.hours }}</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <div class="rm-container rm-footer__bottom">
+    <span>&copy; {{ year }} {{ site.name }}. All rights reserved.</span>
+    <span class="rm-footer__license">{{ site.license.display }}</span>
+  </div>
+</footer>
