@@ -4,11 +4,20 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build && npm run check:privacy",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
+    "build": "npm run build:prod",
+    "build:dev": "ng build --configuration development --output-path dist/rm-roofing-dev && npm run check:privacy",
+    "build:prod": "ng build --configuration production && npm run check:privacy",
+    "env:dev": "node tools/generate-env.mjs --mode development",
+    "env:prod": "node tools/generate-env.mjs --mode production",
+    "prestart": "npm run env:dev",
+    "prewatch": "npm run env:dev",
+    "pretest": "npm run env:dev",
+    "prebuild:dev": "npm run env:dev",
+    "prebuild:prod": "npm run env:prod",
     "check:privacy": "node tools/check-privacy.mjs",
-    "verify": "npm run check:privacy && ng build"
+    "verify": "npm run build:prod"
   },
   "private": true,
   "packageManager": "npm@11.19.0",

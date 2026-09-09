@@ -9,6 +9,7 @@ import {
 import { IconComponent } from '../../shared/icon/icon';
 import { SITE, telHref } from '../../core/site.config';
 import { ScrollSpyService } from '../../core/scroll-spy.service';
+import { EstimateService } from '../../core/estimate.service';
 
 interface NavItem {
   /** Element id of the section this links to. */
@@ -37,6 +38,7 @@ export class HeaderComponent {
   ];
 
   private readonly scrollSpy = inject(ScrollSpyService);
+  private readonly estimate = inject(EstimateService);
   protected readonly activeId = this.scrollSpy.active;
 
   protected readonly menuOpen = signal(false);
@@ -65,6 +67,16 @@ export class HeaderComponent {
   protected onNavClick(id: string): void {
     this.scrollSpy.select(id);
     this.closeMenu();
+  }
+
+  /**
+   * Opens the estimate dialog. Closes the mobile drawer first, otherwise the
+   * two overlays stack and the body keeps a scroll lock the drawer owns.
+   */
+  protected openEstimate(event: Event): void {
+    const trigger = event.currentTarget as HTMLElement;
+    this.closeMenu();
+    this.estimate.open(trigger);
   }
 
   protected toggleMenu(): void {

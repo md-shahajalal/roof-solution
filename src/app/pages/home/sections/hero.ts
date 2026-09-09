@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
 import { SITE } from '../../../core/site.config';
+import { EstimateService } from '../../../core/estimate.service';
 
 @Component({
   selector: 'rm-hero',
@@ -25,11 +26,12 @@ import { SITE } from '../../../core/site.config';
           <blockquote class="rm-hero__motto">&ldquo;{{ site.motto }}&rdquo;</blockquote>
 
           <div class="rm-hero__actions">
-            <a class="rm-btn rm-btn--primary rm-btn--lg" [href]="site.estimateUrl">
+            <button type="button" class="rm-btn rm-btn--primary rm-btn--lg"
+                    (click)="openEstimate($event)">
               <span class="rm-btn__icon"><rm-icon name="calendar" /></span>
               Get a free estimate
               <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
-            </a>
+            </button>
             <a class="rm-btn rm-btn--ghost rm-btn--lg" [href]="site.videoUrl">
               <span class="rm-btn__icon"><rm-icon name="play" /></span>
               Watch video
@@ -47,4 +49,13 @@ import { SITE } from '../../../core/site.config';
 })
 export class HeroComponent {
   protected readonly site = SITE;
+  private readonly estimate = inject(EstimateService);
+
+  /**
+   * Opens the estimate dialog. The button is passed along so focus can return
+   * to exactly where the visitor left it when the dialog closes.
+   */
+  protected openEstimate(event: Event): void {
+    this.estimate.open(event.currentTarget as HTMLElement);
+  }
 }

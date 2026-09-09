@@ -6,6 +6,14 @@
            [alt]="site.name" fetchpriority="high">
     </a>
 
+    <!-- Mobile only. The desktop header carries the number in .rm-header__aside,
+         which is hidden below 900px, so without this the number is buried behind
+         the hamburger — one tap too far for someone standing under a leak. -->
+    <a class="rm-header__call" [href]="telHref" [attr.aria-label]="'Call ' + site.phone">
+      <span class="rm-header__call-ring"><rm-icon name="phone" /></span>
+      <span class="rm-header__call-number">{{ site.phone }}</span>
+    </a>
+
     <button class="rm-nav-toggle" type="button"
             [attr.aria-expanded]="menuOpen()"
             aria-controls="rm-primary-nav"
@@ -30,10 +38,10 @@
           <span class="rm-btn__icon"><rm-icon name="phone" /></span>
           {{ site.phone }}
         </a>
-        <a class="rm-btn rm-btn--primary" [href]="site.estimateUrl" (click)="onNavClick('contact')">
+        <button type="button" class="rm-btn rm-btn--primary" (click)="openEstimate($event)">
           Get a free estimate
           <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
-        </a>
+        </button>
       </div>
     </nav>
 
@@ -46,10 +54,10 @@
         </span>
       </div>
 
-      <a class="rm-btn rm-btn--primary rm-btn--sm" [href]="site.estimateUrl">
+      <button type="button" class="rm-btn rm-btn--primary rm-btn--sm" (click)="openEstimate($event)">
         Get a free estimate
         <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
-      </a>
+      </button>
     </div>
 
   </div>

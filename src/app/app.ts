@@ -3,10 +3,11 @@ import { ViewportScroller } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './layout/header/header';
 import { FooterComponent } from './layout/footer/footer';
+import { EstimateModalComponent } from './shared/estimate-modal/estimate-modal';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent, FooterComponent],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent, EstimateModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a class="rm-skip-link" href="#rm-main">Skip to content</a>
@@ -15,6 +16,10 @@ import { FooterComponent } from './layout/footer/footer';
       <router-outlet />
     </main>
     <rm-footer />
+
+    <!-- Mounted once here so every "Get a free estimate" button on the page,
+         header and footer included, opens the same dialog above everything. -->
+    <rm-estimate-modal />
   `,
 })
 export class App {

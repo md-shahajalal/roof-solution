@@ -1,3 +1,5 @@
+import { ENV } from './environment';
+
 /**
  * Site-wide business details.
  *
@@ -20,9 +22,14 @@ export const SITE = {
   name: 'R&M Roofing Solutions',
   motto: 'Under God’s protection, we cover your home.',
 
-  /** Displayed form. `telHref` derives the dialable form automatically. */
-  phone: '(707) 641-6198',
-  email: 'roofingsolutionsrm@gmail.com',
+  /**
+   * Contact details come from the environment, via the module
+   * `tools/generate-env.mjs` writes before each build. Set `RM_PHONE` and
+   * `RM_EMAIL` to change them without touching code; both fall back to the live
+   * values when unset.
+   */
+  phone: ENV.phone,
+  email: ENV.email,
 
   /** Shown wherever a location would normally go. Deliberately not an address. */
   serviceArea: 'Serving California',
@@ -37,9 +44,15 @@ export const SITE = {
     },
   },
 
-  hours: 'Mon–Sat 7:00 am – 7:00 pm · Emergency line open 24/7',
+  hours: 'Emergency line open 24/7',
 
-  /** Where the "Get a free estimate" buttons point. */
+  /**
+   * Fallback target for "Get a free estimate".
+   *
+   * The buttons open the estimate dialog rather than navigating, so nothing
+   * reads this during normal use. It stays as the no-JavaScript destination and
+   * as the anchor the footer nav still points at.
+   */
   estimateUrl: '#contact',
   videoUrl: '#',
 } as const;
@@ -53,3 +66,53 @@ export function telHref(phone: string = SITE.phone): string {
 export function mailHref(email: string = SITE.email): string {
   return `mailto:${email}`;
 }
+
+export const ESTIMATE_FORM = {
+  /**
+   * The destination address, or the random string FormSubmit issues to stand in
+   * for it. Set `RM_FORM_TOKEN` in the environment — see step 3 above — rather
+   * than editing anything here.
+   */
+  endpointToken: ENV.formToken,
+
+  get endpoint(): string {
+    return `https://formsubmit.co/${this.endpointToken}`;
+  },
+
+  /**
+   * FormSubmit's reCAPTCHA adds an interstitial page in the middle of sending.
+   * On a lead form that friction costs more than the spam it stops, so it is off
+   * and a honeypot field carries the load instead. Flip this to true if junk
+   * starts arriving.
+   */
+  captcha: false,
+
+  /** Query flag FormSubmit sends the visitor back with. See `_next`. */
+  returnParam: 'estimate',
+
+  maxFiles: 6,
+
+  /**
+   * Rejected before compression is attempted. Well above any phone camera; this
+   * only catches someone picking a RAW file or a video by mistake.
+   */
+  maxOriginalBytes: 30 * 1024 * 1024,
+
+  /**
+   * FormSubmit's documented ceiling is 10 MB for the sum of all attachments.
+   * Staying under it leaves room for the text fields and the encoding overhead
+   * multipart adds.
+   */
+  maxPayloadBytes: 9 * 1024 * 1024,
+
+  /**
+   * Photos are downscaled in the browser before sending. A phone shot runs
+   * 3–8 MB, so six untouched files would blow the 10 MB cap on their own; at
+   * 1600px they land around 300–500 KB each and still show a cracked shingle
+   * perfectly well.
+   */
+  compress: {
+    maxEdge: 1600,
+    quality: 0.82,
+  },
+} as const;

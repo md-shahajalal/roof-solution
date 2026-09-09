@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
 import { SITE, telHref } from '../../../core/site.config';
+import { EstimateService } from '../../../core/estimate.service';
 
 @Component({
   selector: 'rm-cta',
@@ -17,11 +18,12 @@ import { SITE, telHref } from '../../../core/site.config';
         <p class="rm-cta__lead">Need a new roof or a repair?</p>
         <p class="rm-cta__support">We’re here to help.</p>
 
-        <a class="rm-btn rm-btn--primary rm-btn--lg" [href]="site.estimateUrl">
+        <button type="button" class="rm-btn rm-btn--primary rm-btn--lg"
+                (click)="openEstimate($event)">
           <span class="rm-btn__icon"><rm-icon name="calendar" /></span>
           Get a free estimate
           <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
-        </a>
+        </button>
 
         <a class="rm-btn rm-btn--ghost rm-btn--lg" [href]="telHref">
           <span class="rm-btn__icon"><rm-icon name="phone" /></span>
@@ -34,4 +36,13 @@ import { SITE, telHref } from '../../../core/site.config';
 export class CtaComponent {
   protected readonly site = SITE;
   protected readonly telHref = telHref();
+  private readonly estimate = inject(EstimateService);
+
+  /**
+   * Opens the estimate dialog. The button is passed along so focus can return
+   * to exactly where the visitor left it when the dialog closes.
+   */
+  protected openEstimate(event: Event): void {
+    this.estimate.open(event.currentTarget as HTMLElement);
+  }
 }
