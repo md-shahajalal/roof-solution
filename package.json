@@ -6,7 +6,7 @@
     "start": "ng serve",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "build": "npm run build:prod",
+    "build": "npm run build:dev",
     "build:dev": "ng build --configuration development --output-path dist/rm-roofing-dev && npm run check:privacy",
     "build:prod": "ng build --configuration production && npm run check:privacy",
     "env:dev": "node tools/generate-env.mjs --mode development",
