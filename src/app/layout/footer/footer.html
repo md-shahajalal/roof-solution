@@ -56,4 +56,19 @@
     <span>&copy; {{ year }} {{ site.name }}. All rights reserved.</span>
     <span class="rm-footer__license">{{ site.license.display }}</span>
   </div>
+
+  <!-- Development builds only. Tells you at a glance which build you are looking
+       at and, more usefully, which inbox a test enquiry is about to land in. The
+       production build renders nothing here. -->
+  @if (!env.production) {
+    <div class="rm-envbar">
+      <div class="rm-container rm-envbar__inner">
+        <span class="rm-envbar__tag">{{ env.mode }} build</span>
+        <span class="rm-envbar__item">
+          estimate form &rarr; <strong>{{ env.formToken }}</strong>
+        </span>
+        <span class="rm-envbar__item">site email &rarr; <strong>{{ env.email }}</strong></span>
+      </div>
+    </div>
+  }
 </footer>

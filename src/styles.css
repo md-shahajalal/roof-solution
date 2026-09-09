@@ -1117,3 +1117,44 @@ body.rm-modal-open { overflow: hidden; }
   .rm-form__actions .rm-btn { flex: 1 1 100%; justify-content: center; }
   .rm-form__call { margin: 4px auto 0; }
 }
+
+/* ------------------------------------------------------- dev environment bar */
+/* Rendered only by development builds, so it never reaches a visitor. Hazard
+   stripes because the point is to be impossible to mistake for site chrome:
+   the question it answers is "which inbox is this build about to email?". */
+.rm-envbar {
+  background: repeating-linear-gradient(
+    135deg,
+    #1b2634, #1b2634 12px,
+    #232f3f 12px, #232f3f 24px
+  );
+  border-top: 3px solid var(--rm-gold);
+  color: #fff;
+}
+
+.rm-envbar__inner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding-top: 12px; padding-bottom: 12px;
+  font-family: var(--rm-body);
+  font-size: .84rem;
+  line-height: 1.4;
+}
+
+.rm-envbar__tag {
+  flex: none;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--rm-gold);
+  color: #1b2634;
+  font-family: var(--rm-display);
+  font-size: .72rem; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.rm-envbar__item {
+  color: rgba(255, 255, 255, .78);
+  /* Addresses are long and must not push the bar into a horizontal scroll. */
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.rm-envbar__item strong { color: #fff; font-weight: 600; }
