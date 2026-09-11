@@ -5,6 +5,50 @@ import { EstimateModalComponent, formatTime } from './estimate-modal';
 import { EstimateService } from '../../core/estimate.service';
 import { ESTIMATE_FORM } from '../../core/site.config';
 
+/** The questions that can be shown or hidden. Name and phone are always asked. */
+type OptionalField =
+  | 'email'
+  | 'city'
+  | 'propertyAddress'
+  | 'propertyType'
+  | 'service'
+  | 'description'
+  | 'preferredDate'
+  | 'preferredTime'
+  | 'photos';
+
+/**
+ * Which of them the form shows right now.
+ *
+ * Mirrors the HIDDEN FIELD blocks in estimate-modal.html: when you show or hide
+ * a field there, add or remove it here and the suite follows. The field-by-field
+ * checks cover whatever combination this lists, and a test that needs a field
+ * which is hidden skips itself rather than failing.
+ */
+const SHOWN: ReadonlySet<OptionalField> = new Set<OptionalField>([
+  'propertyAddress',
+  'service',
+  'photos',
+]);
+
+/** Where each field sits in the page, and the row it produces in the email. */
+const FIELDS: Record<OptionalField, { selector: string; row: string }> = {
+  email: { selector: '#rm-email', row: 'email' },
+  city: { selector: '#rm-city', row: 'City' },
+  propertyAddress: { selector: '#rm-address', row: 'Property address' },
+  propertyType: { selector: 'input[type="radio"]', row: 'Type of property' },
+  service: { selector: '#rm-service', row: 'Roofing service needed' },
+  description: { selector: '#rm-description', row: 'Description of the issue or project' },
+  preferredDate: { selector: '#rm-date', row: 'Preferred date for inspection' },
+  preferredTime: { selector: '#rm-time', row: 'Preferred time' },
+  photos: { selector: '#rm-photos', row: 'Photos attached' },
+};
+
+const ALL = Object.keys(FIELDS) as OptionalField[];
+
+/** Runs while every named field is shown; skipped, not deleted, otherwise. */
+const withFields = (...fields: OptionalField[]) => it.runIf(fields.every((f) => SHOWN.has(f)));
+
 /**
  * Covers the behaviours the client asked for by name: the dialog opens from a
  * button, it survives a backdrop click, and a completed form is handed to
@@ -27,19 +71,6 @@ describe('EstimateModalComponent', () => {
     'files',
   )!;
 
-  /**
-   * Whether the HIDDEN FOR NOW fields are commented out. Set to false when you
-   * uncomment them, and the suite follows: the full-form tests run again and
-   * the ones asserting the fields are gone stand down. `boolean`, not the
-   * literal, so flipping it is the only edit needed.
-   */
-  const FIELDS_HIDDEN: boolean = true;
-
-  /** Needs a field that is hidden for now. Skipped, not deleted. */
-  const needsHiddenFields = it.skipIf(FIELDS_HIDDEN);
-  /** Asserts the trimmed form specifically, so it retires when the fields return. */
-  const trimmedFormOnly = it.runIf(FIELDS_HIDDEN);
-
   const panel = () => fixture.nativeElement.querySelector('.rm-modal__panel');
   const field = (selector: string) =>
     fixture.nativeElement.querySelector(selector) as
@@ -54,12 +85,11 @@ describe('EstimateModalComponent', () => {
     el.dispatchEvent(new Event('change'));
   }
 
-  /** Fills only what is required, so each test can add what it cares about. */
+  /** Fills what is required: name, phone, and each required field that is shown. */
   function fillRequired(): void {
     type('#rm-name', 'Jane Doe');
     type('#rm-phone', '(707) 555-0123');
-    // Required again once the hidden fields come back.
-    if (!FIELDS_HIDDEN) type('#rm-service', 'Roof Repair');
+    if (SHOWN.has('service')) type('#rm-service', 'Roof Repair');
   }
 
   const submitForm = () =>
@@ -158,31 +188,45 @@ describe('EstimateModalComponent', () => {
     expect(panel()).toBeNull();
   });
 
-  trimmedFormOnly('asks only for name, phone and an optional email', async () => {
+  it('shows exactly the fields SHOWN lists, besides name and phone', async () => {
     estimate.open();
     await fixture.whenStable();
 
-    for (const id of ['#rm-name', '#rm-phone', '#rm-email']) {
-      expect(field(id), `missing ${id}`).toBeTruthy();
-    }
+    expect(field('#rm-name')).toBeTruthy();
+    expect(field('#rm-phone')).toBeTruthy();
 
-    // Commented out, not merely hidden with CSS: none of them are in the DOM.
-    for (const id of [
-      '#rm-address',
-      '#rm-city',
-      '#rm-service',
-      '#rm-description',
-      '#rm-date',
-      '#rm-time',
-      '#rm-photos',
-    ]) {
-      expect(field(id), `${id} should be hidden for now`).toBeNull();
+    // Hidden means commented out, not merely styled away: absent from the DOM.
+    for (const name of ALL) {
+      const present = fixture.nativeElement.querySelector(FIELDS[name].selector) !== null;
+      expect(present, `${name} should be ${SHOWN.has(name) ? 'shown' : 'hidden'}`).toBe(
+        SHOWN.has(name),
+      );
     }
-    expect(fixture.nativeElement.querySelector('input[type="radio"]')).toBeNull();
+  });
 
-    const emailLabel = fixture.nativeElement.querySelector('label[for="rm-email"]');
-    expect(emailLabel?.textContent).toContain('optional');
-    expect(emailLabel?.querySelector('.rm-req')).toBeNull();
+  withFields('photos')('labels the photos as optional', async () => {
+    estimate.open();
+    await fixture.whenStable();
+
+    const photoField = field('#rm-photos').closest('.rm-field');
+    expect(photoField?.querySelector('.rm-optional')?.textContent).toContain('optional');
+  });
+
+  withFields('service')('offers every service the business provides', async () => {
+    estimate.open();
+    await fixture.whenStable();
+
+    const services = Array.from(fixture.nativeElement.querySelectorAll('#rm-service option'))
+      .map((el) => (el as HTMLOptionElement).value)
+      .filter(Boolean);
+    expect(services).toEqual([
+      'Roof Replacement',
+      'Roof Repair',
+      'Roof Inspection',
+      'Storm Damage',
+      'Maintenance',
+      'Other',
+    ]);
   });
 
   it('does NOT close when the backdrop is clicked', async () => {
@@ -220,12 +264,58 @@ describe('EstimateModalComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.rm-field--invalid').length).toBeGreaterThan(0);
   });
 
-  trimmedFormOnly('sends only name, phone and email, and no rows for questions not asked', async () => {
+  withFields('propertyAddress')('sends without a property address, since it is optional', async () => {
+    estimate.open();
+    await fixture.whenStable();
+    fillRequired();
+    await fixture.whenStable();
+
+    submitForm();
+    await fixture.whenStable();
+
+    expect(submitted).toHaveLength(1);
+    // Asked but left blank: the row stays, so the owner can see it was asked.
+    expect(new FormData(submitted[0]).get('Property address')).toBe('—');
+  });
+
+  withFields('propertyAddress')('labels the property address as optional', async () => {
+    estimate.open();
+    await fixture.whenStable();
+
+    const label = fixture.nativeElement.querySelector('label[for="rm-address"]');
+    expect(label?.querySelector('.rm-optional')?.textContent).toContain('optional');
+    expect(label?.querySelector('.rm-req')).toBeNull();
+  });
+
+  withFields('service')('requires the roofing service', async () => {
+    estimate.open();
+    await fixture.whenStable();
+    fillRequired();
+    type('#rm-service', '');
+    await fixture.whenStable();
+
+    submitForm();
+    await fixture.whenStable();
+
+    expect(submitted).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('#rm-service-err')?.textContent).toContain(
+      'pick the service',
+    );
+  });
+
+  it('builds a FormSubmit POST with a row for every question asked, and none for the rest', async () => {
     estimate.open();
     await fixture.whenStable();
 
     fillRequired();
-    type('#rm-email', 'jane@example.com');
+    if (SHOWN.has('propertyAddress')) type('#rm-address', '19 Example St');
+    if (SHOWN.has('email')) type('#rm-email', 'jane@example.com');
+    if (SHOWN.has('city')) type('#rm-city', 'Vallejo');
+    if (SHOWN.has('description')) type('#rm-description', 'Leak over the back bedroom.');
+    if (SHOWN.has('preferredTime')) type('#rm-time', '14:30');
+    if (SHOWN.has('propertyType')) {
+      (fixture.nativeElement.querySelector('input[type="radio"]') as HTMLInputElement).click();
+    }
     await fixture.whenStable();
 
     submitForm();
@@ -233,7 +323,6 @@ describe('EstimateModalComponent', () => {
 
     expect(submitted).toHaveLength(1);
     const form = submitted[0];
-
     expect(form.method.toUpperCase()).toBe('POST');
     expect(form.enctype).toBe('multipart/form-data');
     expect(form.action).toBe(`https://formsubmit.co/${ESTIMATE_FORM.endpointToken}`);
@@ -241,35 +330,50 @@ describe('EstimateModalComponent', () => {
     const sent = new FormData(form);
     expect(sent.get('Full name')).toBe('Jane Doe');
     expect(sent.get('Phone number')).toBe('(707) 555-0123');
-    // FormSubmit keys Reply-To off a field named exactly `email`.
-    expect(sent.get('email')).toBe('jane@example.com');
-    // Lets the owner hit Reply in Gmail and land in the customer's inbox.
-    expect(sent.get('_replyto')).toBe('jane@example.com');
 
-    // Questions that were not asked leave no row, rather than a column of dashes.
-    for (const hidden of [
-      'Property address',
-      'City',
-      'Type of property',
-      'Roofing service needed',
-      'Description of the issue or project',
-      'Preferred date for inspection',
-      'Preferred time',
-      'Photos attached',
-    ]) {
-      expect(sent.has(hidden), `${hidden} should not be sent`).toBe(false);
+    // What each shown question should read as in the email.
+    const expected: Record<OptionalField, string> = {
+      email: 'jane@example.com',
+      city: 'Vallejo',
+      propertyAddress: '19 Example St',
+      propertyType: 'Residential',
+      service: 'Roof Repair',
+      description: 'Leak over the back bedroom.',
+      // Left blank on purpose: the owner is told rather than left guessing.
+      preferredDate: 'No preference',
+      // Sent in 12-hour form: `14:30` is a puzzle to read in an inbox.
+      preferredTime: '2:30 PM',
+      // None picked in this test.
+      photos: 'None',
+    };
+
+    for (const name of ALL) {
+      const { row } = FIELDS[name];
+      if (SHOWN.has(name)) {
+        expect(sent.get(row), `row for ${name}`).toBe(expected[name]);
+      } else {
+        // A question that was not asked leaves no row, rather than a dash.
+        expect(sent.has(row), `${name} is hidden, so no "${row}" row`).toBe(false);
+      }
     }
 
-    // No service was asked, so no empty brackets trailing the subject.
-    expect(sent.get('_subject')).toBe('Free estimate request — Jane Doe');
+    // Reply-To exists only when there is an address to reply to.
+    if (SHOWN.has('email')) {
+      expect(sent.get('_replyto')).toBe('jane@example.com');
+    } else {
+      expect(sent.has('_replyto')).toBe(false);
+      expect(sent.has('Email address')).toBe(false);
+    }
+
+    const about = SHOWN.has('service') ? ' (Roof Repair)' : '';
+    expect(sent.get('_subject')).toBe(`Free estimate request — Jane Doe${about}`);
     // Honeypot must go out empty, otherwise every submission looks like a bot.
     expect(sent.get('_honey')).toBe('');
   });
 
-  it('sends without an email address, and says so in the email', async () => {
+  withFields('email')('sends without an email address, and says so in the email', async () => {
     estimate.open();
     await fixture.whenStable();
-
     fillRequired();
     await fixture.whenStable();
 
@@ -284,10 +388,9 @@ describe('EstimateModalComponent', () => {
     expect(sent.has('_replyto')).toBe(false);
   });
 
-  it('still rejects an email address that is filled in but malformed', async () => {
+  withFields('email')('still rejects an email address that is filled in but malformed', async () => {
     estimate.open();
     await fixture.whenStable();
-
     fillRequired();
     type('#rm-email', 'not-an-email');
     await fixture.whenStable();
@@ -299,79 +402,6 @@ describe('EstimateModalComponent', () => {
     expect(fixture.nativeElement.querySelector('#rm-email-err')?.textContent).toContain(
       'check the email address',
     );
-  });
-
-  needsHiddenFields('renders every requested field once open', async () => {
-    estimate.open();
-    await fixture.whenStable();
-
-    for (const id of [
-      '#rm-name',
-      '#rm-phone',
-      '#rm-email',
-      '#rm-address',
-      '#rm-city',
-      '#rm-service',
-      '#rm-description',
-      '#rm-date',
-      '#rm-time',
-      '#rm-photos',
-    ]) {
-      expect(field(id), `missing ${id}`).toBeTruthy();
-    }
-
-    // Angular's RadioControlValueAccessor claims `[value]` for itself and never
-    // writes it to the DOM, so the visible labels are what there is to assert
-    // here. The value that actually gets submitted is checked further down.
-    const propertyTypes = Array.from(
-      fixture.nativeElement.querySelectorAll('.rm-choice__box'),
-    ).map((el) => (el as HTMLElement).textContent?.trim());
-    expect(propertyTypes).toEqual(['Residential', 'Commercial']);
-
-    const services = Array.from(fixture.nativeElement.querySelectorAll('#rm-service option'))
-      .map((el) => (el as HTMLOptionElement).value)
-      .filter(Boolean);
-    expect(services).toEqual([
-      'Roof Replacement',
-      'Roof Repair',
-      'Roof Inspection',
-      'Storm Damage',
-      'Maintenance',
-      'Other',
-    ]);
-  });
-
-  needsHiddenFields('builds a FormSubmit multipart POST carrying every answer', async () => {
-    estimate.open();
-    await fixture.whenStable();
-
-    fillRequired();
-    type('#rm-email', 'jane@example.com');
-    type('#rm-address', '19 Example St');
-    type('#rm-city', 'Vallejo');
-    type('#rm-description', 'Leak over the back bedroom.');
-    type('#rm-time', '14:30');
-    (fixture.nativeElement.querySelector('input[type="radio"]') as HTMLInputElement).click();
-    await fixture.whenStable();
-
-    submitForm();
-    await fixture.whenStable();
-
-    expect(submitted).toHaveLength(1);
-    const sent = new FormData(submitted[0]);
-    expect(sent.get('Full name')).toBe('Jane Doe');
-    expect(sent.get('Phone number')).toBe('(707) 555-0123');
-    expect(sent.get('email')).toBe('jane@example.com');
-    expect(sent.get('Roofing service needed')).toBe('Roof Repair');
-    expect(sent.get('Type of property')).toBe('Residential');
-    expect(sent.get('City')).toBe('Vallejo');
-    expect(sent.get('Property address')).toBe('19 Example St');
-    // Sent in 12-hour form: `14:30` is a puzzle to read in an inbox.
-    expect(sent.get('Preferred time')).toBe('2:30 PM');
-    // Nothing was picked, so the owner is told rather than left guessing.
-    expect(sent.get('Preferred date for inspection')).toBe('No preference');
-    expect(sent.get('Photos attached')).toBe('None');
-    expect(sent.get('_subject')).toBe('Free estimate request — Jane Doe (Roof Repair)');
   });
 
   it('points _next back at the host it is being served from', async () => {
@@ -390,7 +420,7 @@ describe('EstimateModalComponent', () => {
     expect(next).toContain(`${ESTIMATE_FORM.returnParam}=sent`);
   });
 
-  needsHiddenFields('attaches the photos as files under the name FormSubmit expects', async () => {
+  withFields('photos')('attaches the photos as files under the name FormSubmit expects', async () => {
     installDataTransfer();
 
     estimate.open();
@@ -423,7 +453,7 @@ describe('EstimateModalComponent', () => {
     expect(new FormData(form).get('Photos attached')).toBe('roof.jpg');
   });
 
-  needsHiddenFields('refuses to send rather than dropping photos a browser cannot attach', async () => {
+  withFields('photos')('refuses to send rather than dropping photos a browser cannot attach', async () => {
     // No DataTransfer installed, which is the shape of a pre-14.1 Safari.
     expect(typeof DataTransfer).not.toBe('function');
 
@@ -442,7 +472,7 @@ describe('EstimateModalComponent', () => {
     );
   });
 
-  needsHiddenFields('keeps every photo from one multi-select', async () => {
+  withFields('photos')('keeps every photo from one multi-select', async () => {
     installDataTransfer();
 
     estimate.open();
@@ -489,7 +519,7 @@ describe('EstimateModalComponent', () => {
     );
   });
 
-  needsHiddenFields('adds to the list across separate picks, and ignores a repeat of the same file', async () => {
+  withFields('photos')('adds to the list across separate picks, and ignores a repeat of the same file', async () => {
     estimate.open();
     await fixture.whenStable();
 
@@ -505,7 +535,7 @@ describe('EstimateModalComponent', () => {
     expect(listed).toEqual(['north-slope.jpg', 'ridge.jpg']);
   });
 
-  needsHiddenFields('keeps two different photos that happen to share a name', async () => {
+  withFields('photos')('keeps two different photos that happen to share a name', async () => {
     estimate.open();
     await fixture.whenStable();
 
@@ -519,7 +549,7 @@ describe('EstimateModalComponent', () => {
     expect(fixture.nativeElement.querySelectorAll('.rm-upload__item').length).toBe(2);
   });
 
-  needsHiddenFields('removes only the photo whose button was pressed', async () => {
+  withFields('photos')('removes only the photo whose button was pressed', async () => {
     estimate.open();
     await fixture.whenStable();
 
@@ -537,41 +567,7 @@ describe('EstimateModalComponent', () => {
     expect(listed).toEqual(['two.jpg']);
   });
 
-  it('refuses to send a link in any free-text field, and says why', async () => {
-    estimate.open();
-    await fixture.whenStable();
-
-    fillRequired();
-    type('#rm-name', 'Jane http://spam.example.com');
-    await fixture.whenStable();
-
-    submitForm();
-    await fixture.whenStable();
-
-    expect(submitted).toHaveLength(0);
-    expect(fixture.nativeElement.querySelector('#rm-name-err')?.textContent).toContain(
-      'remove the web address',
-    );
-  });
-
-  needsHiddenFields('lets an ordinary description through untouched', async () => {
-    estimate.open();
-    await fixture.whenStable();
-
-    fillRequired();
-    type('#rm-description', 'The shingles are cracked.The gutter leaks too. Roof is approx. 12 yrs old.');
-    await fixture.whenStable();
-
-    submitForm();
-    await fixture.whenStable();
-
-    expect(submitted).toHaveLength(1);
-    expect(new FormData(submitted[0]).get('Description of the issue or project')).toContain(
-      'shingles are cracked',
-    );
-  });
-
-  needsHiddenFields('accepts photos dropped on the picker, not just chosen through it', async () => {
+  withFields('photos')('accepts photos dropped on the picker, not just chosen through it', async () => {
     estimate.open();
     await fixture.whenStable();
 
@@ -588,7 +584,7 @@ describe('EstimateModalComponent', () => {
     );
   });
 
-  needsHiddenFields('rejects a file that is not an image', async () => {
+  withFields('photos')('rejects a file that is not an image', async () => {
     estimate.open();
     await fixture.whenStable();
 
@@ -597,6 +593,57 @@ describe('EstimateModalComponent', () => {
     expect(fixture.nativeElement.querySelector('.rm-upload__list')).toBeNull();
     expect(fixture.nativeElement.querySelector('.rm-field__error')?.textContent).toContain(
       'not an image',
+    );
+  });
+
+  it('refuses to send a link in a free-text field, and says why', async () => {
+    estimate.open();
+    await fixture.whenStable();
+
+    fillRequired();
+    type('#rm-name', 'Jane http://spam.example.com');
+    await fixture.whenStable();
+
+    submitForm();
+    await fixture.whenStable();
+
+    expect(submitted).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('#rm-name-err')?.textContent).toContain(
+      'remove the web address',
+    );
+  });
+
+  withFields('propertyAddress')('refuses a link in the property address too', async () => {
+    estimate.open();
+    await fixture.whenStable();
+
+    fillRequired();
+    type('#rm-address', 'Visit www.spam-roofing.example');
+    await fixture.whenStable();
+
+    submitForm();
+    await fixture.whenStable();
+
+    expect(submitted).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('#rm-address-err')?.textContent).toContain(
+      'remove the web address',
+    );
+  });
+
+  withFields('description')('lets an ordinary description through untouched', async () => {
+    estimate.open();
+    await fixture.whenStable();
+
+    fillRequired();
+    type('#rm-description', 'The shingles are cracked.The gutter leaks too. Roof is approx. 12 yrs old.');
+    await fixture.whenStable();
+
+    submitForm();
+    await fixture.whenStable();
+
+    expect(submitted).toHaveLength(1);
+    expect(new FormData(submitted[0]).get('Description of the issue or project')).toContain(
+      'shingles are cracked',
     );
   });
 });

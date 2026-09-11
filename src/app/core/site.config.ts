@@ -1,4 +1,4 @@
-import { ENV } from './environment';
+import { environment } from '../../environments/environment';
 
 /**
  * Site-wide business details.
@@ -23,13 +23,12 @@ export const SITE = {
   motto: 'Under God’s protection, we cover your home.',
 
   /**
-   * Contact details come from the environment, via the module
-   * `tools/generate-env.mjs` writes before each build. Set `RM_PHONE` and
-   * `RM_EMAIL` to change them without touching code; both fall back to the live
-   * values when unset.
+   * Contact details differ between development and the live site, so they live
+   * in the environment files: src/environments/environment.ts for production and
+   * environment.development.ts for development.
    */
-  phone: ENV.phone,
-  email: ENV.email,
+  phone: environment.phone,
+  email: environment.email,
 
   /** Shown wherever a location would normally go. Deliberately not an address. */
   serviceArea: 'Serving California',
@@ -70,10 +69,10 @@ export function mailHref(email: string = SITE.email): string {
 export const ESTIMATE_FORM = {
   /**
    * The destination address, or the random string FormSubmit issues to stand in
-   * for it. Set `RM_FORM_TOKEN` in the environment — see step 3 above — rather
-   * than editing anything here.
+   * for it. Set per build as `formToken` in the environment files rather than
+   * here, so development enquiries never reach the business.
    */
-  endpointToken: ENV.formToken,
+  endpointToken: environment.formToken,
 
   get endpoint(): string {
     return `https://formsubmit.co/${this.endpointToken}`;

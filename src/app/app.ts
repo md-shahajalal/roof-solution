@@ -4,10 +4,17 @@ import { RouterOutlet } from '@angular/router';
 import { HeaderComponent } from './layout/header/header';
 import { FooterComponent } from './layout/footer/footer';
 import { EstimateModalComponent } from './shared/estimate-modal/estimate-modal';
+import { ContactPopupComponent } from './shared/contact-popup/contact-popup';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, EstimateModalComponent],
+  imports: [
+    RouterOutlet,
+    HeaderComponent,
+    FooterComponent,
+    EstimateModalComponent,
+    ContactPopupComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a class="rm-skip-link" href="#rm-main">Skip to content</a>
@@ -20,6 +27,9 @@ import { EstimateModalComponent } from './shared/estimate-modal/estimate-modal';
     <!-- Mounted once here so every "Get a free estimate" button on the page,
          header and footer included, opens the same dialog above everything. -->
     <rm-estimate-modal />
+
+    <!-- Slides in once per visit and hands off to tawk.to's chat. -->
+    <rm-contact-popup />
   `,
 })
 export class App {

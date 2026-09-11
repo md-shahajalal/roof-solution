@@ -9,13 +9,6 @@
     "build": "npm run build:dev",
     "build:dev": "ng build --configuration development --output-path dist/rm-roofing-dev && npm run check:privacy",
     "build:prod": "ng build --configuration production && npm run check:privacy",
-    "env:dev": "node tools/generate-env.mjs --mode development",
-    "env:prod": "node tools/generate-env.mjs --mode production",
-    "prestart": "npm run env:dev",
-    "prewatch": "npm run env:dev",
-    "pretest": "npm run env:dev",
-    "prebuild:dev": "npm run env:dev",
-    "prebuild:prod": "npm run env:prod",
     "check:privacy": "node tools/check-privacy.mjs",
     "verify": "npm run build:prod"
   },

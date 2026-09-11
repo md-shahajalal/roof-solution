@@ -43,6 +43,26 @@
 
         <form class="rm-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
 
+          <!-- SHOWING AND HIDING FIELDS
+
+               Name and phone are always asked. Every other question has its own
+               block below. A hidden one sits inside a comment that opens on a
+               "HIDDEN FIELD: <name>" line and closes on an "END HIDDEN FIELD:
+               <name>" line.
+
+               To show a field:
+                 1. Delete its two marker lines here.
+                 2. Uncomment its control in estimate-modal.ts, marked there with
+                    the same "HIDDEN FIELD: <name>" label.
+                 3. Add it to SHOWN in estimate-modal.spec.ts.
+               To hide one, do the same in reverse.
+
+               A required field (marked *) has to be shown or hidden together with
+               its control: a required control with no visible field means the
+               form can never be submitted.
+
+               The photo picker's label deliberately has no `for` attribute; the
+               reason is on onFilesPicked in estimate-modal.ts. -->
           <div class="rm-form__grid">
 
             <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('fullName')">
@@ -67,6 +87,7 @@
               }
             </div>
 
+            <!-- HIDDEN FIELD: Email
             <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('email')">
               <label for="rm-email">Email address <span class="rm-optional">(optional)</span></label>
               <input id="rm-email" type="email" formControlName="email"
@@ -77,21 +98,10 @@
                 <p class="rm-field__error" id="rm-email-err">{{ errorFor('email') }}</p>
               }
             </div>
+            END HIDDEN FIELD: Email -->
 
-            <!-- HIDDEN FOR NOW. The client asked for name, phone and email only,
-                 so the fields below are commented out rather than deleted.
-
-                 To bring them back:
-                   1. Delete the "HIDDEN FOR NOW: BEGIN" and "HIDDEN FOR NOW: END"
-                      lines that wrap the block.
-                   2. Uncomment the matching form controls in estimate-modal.ts
-                      (search for "HIDDEN FOR NOW" there too).
-                   3. In estimate-modal.spec.ts, set FIELDS_HIDDEN to false.
-
-                 The photo picker's label deliberately has no `for` attribute;
-                 the reason is on onFilesPicked in estimate-modal.ts. -->
-            <!-- HIDDEN FOR NOW: BEGIN
-            <div class="rm-field" [class.rm-field--invalid]="invalid('city')">
+            <!-- HIDDEN FIELD: City
+            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('city')">
               <label for="rm-city">City</label>
               <input id="rm-city" type="text" formControlName="city"
                      autocomplete="address-level2" placeholder="Vallejo"
@@ -101,9 +111,10 @@
                 <p class="rm-field__error" id="rm-city-err">{{ errorFor('city') }}</p>
               }
             </div>
+            END HIDDEN FIELD: City -->
 
             <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('propertyAddress')">
-              <label for="rm-address">Property address</label>
+              <label for="rm-address">Property address <span class="rm-optional">(optional)</span></label>
               <input id="rm-address" type="text" formControlName="propertyAddress"
                      autocomplete="street-address" placeholder="Street address of the property"
                      [attr.aria-invalid]="invalid('propertyAddress') || null"
@@ -113,6 +124,7 @@
               }
             </div>
 
+            <!-- HIDDEN FIELD: Type of property
             <fieldset class="rm-field rm-field--wide rm-fieldset">
               <legend>Type of property</legend>
               <div class="rm-choices">
@@ -127,6 +139,7 @@
                 }
               </div>
             </fieldset>
+            END HIDDEN FIELD: Type of property -->
 
             <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('service')">
               <label for="rm-service">
@@ -145,6 +158,7 @@
               }
             </div>
 
+            <!-- HIDDEN FIELD: Description
             <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('description')">
               <label for="rm-description">Brief description of the roofing issue or project</label>
               <textarea id="rm-description" formControlName="description" rows="4"
@@ -155,22 +169,29 @@
                 <p class="rm-field__error" id="rm-description-err">{{ errorFor('description') }}</p>
               }
             </div>
+            END HIDDEN FIELD: Description -->
 
-            <div class="rm-field">
+            <!-- HIDDEN FIELD: Preferred date
+            <div class="rm-field rm-field--wide">
               <label for="rm-date">Preferred date for inspection</label>
               <input id="rm-date" type="date" formControlName="preferredDate" [min]="today">
             </div>
+            END HIDDEN FIELD: Preferred date -->
 
-            <div class="rm-field">
+            <!-- HIDDEN FIELD: Preferred time
+            <div class="rm-field rm-field--wide">
               <label for="rm-time">Preferred time</label>
               <input id="rm-time" type="time" formControlName="preferredTime">
             </div>
+            END HIDDEN FIELD: Preferred time -->
 
             <div class="rm-field rm-field--wide">
-              <span class="rm-field__label">Photos of the roof or damage</span>
+              <span class="rm-field__label">
+                Photos of the roof or damage <span class="rm-optional">(optional)</span>
+              </span>
               <p class="rm-field__hint">
-                Optional, but it helps us quote accurately. Up to {{ limits.maxFiles }} images.
-                Large photos are resized on your device before sending.
+                Helps us quote accurately. Up to {{ limits.maxFiles }} images. Large photos
+                are resized on your device before sending.
               </p>
 
               <label class="rm-upload"
@@ -213,7 +234,6 @@
                 <p class="rm-field__error">{{ fileError() }}</p>
               }
             </div>
-            HIDDEN FOR NOW: END -->
 
           </div>
 

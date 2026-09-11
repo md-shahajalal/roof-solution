@@ -50,10 +50,3 @@ node_modules/
 
 .vercel
 .env*
-
-# Generated from environment variables by tools/generate-env.mjs on every
-# build. Keep it out of git so a deployment's values live in its environment.
-/src/app/core/environment.ts
-
-# ...but the template that documents which variables exist is committed.
-!.env.example

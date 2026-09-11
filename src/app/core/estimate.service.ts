@@ -5,12 +5,11 @@ import { ESTIMATE_FORM } from './site.config';
 export interface EstimateRequest {
   fullName: string;
   phone: string;
-  /** Optional on the form. Empty when the visitor left it blank. */
-  email: string;
 
-  // Present only while the matching fields are switched on (see HIDDEN FOR NOW
-  // in the modal). Absent means the question was not asked, so `send` writes
-  // no row for it; an empty string means it was asked and left blank.
+  // Present only while the matching field is shown (see HIDDEN FIELD in the
+  // modal). Absent means the question was not asked, so `send` writes no row
+  // for it; an empty string means it was asked and left blank.
+  email?: string;
   propertyAddress?: string;
   city?: string;
   propertyType?: string;
@@ -154,9 +153,9 @@ export class EstimateService {
       // Named `email`, not something prettier: FormSubmit only honours
       // `_replyto` when it can find a field by exactly that name.
       field('email', request.email);
-    } else {
-      // Not `email`: FormSubmit may validate a field by that name, and the owner
-      // should see plainly that there is no address to reply to.
+    } else if (request.email !== undefined) {
+      // Asked but left blank. Not `email`: FormSubmit may validate a field by
+      // that name, and the owner should see plainly there is nothing to reply to.
       field('Email address', 'Not provided');
     }
 

@@ -85,21 +85,34 @@ export class EstimateModalComponent {
   protected readonly form = this.fb.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(2), noLinks]],
     phone: ['', [Validators.required, Validators.pattern(/^[0-9+()\-.\s]{7,}$/)]],
-    // Optional. `Validators.email` passes an empty value, so this only checks
-    // the format once something has been typed.
-    email: ['', Validators.email],
 
-    // HIDDEN FOR NOW. Uncomment together with the block of the same name in
-    // estimate-modal.html. These must go with the template, not before it:
-    // `service` is required, so a live control with no visible field would
-    // leave the form impossible to submit.
-    //
-    // propertyAddress: ['', noLinks],
+    // Each optional question below is shown or hidden together with its block
+    // in estimate-modal.html, which carries the same "HIDDEN FIELD" label. A
+    // required control must never be live without its field on the page, or
+    // the form can never be submitted.
+
+    // HIDDEN FIELD: Email. Optional when shown: `Validators.email` passes an
+    // empty value, so it only checks the format once something is typed.
+    // email: ['', Validators.email],
+
+    // HIDDEN FIELD: City
     // city: ['', noLinks],
+
+    // Optional: an enquiry without an address is still a lead worth calling.
+    propertyAddress: ['', noLinks],
+
+    // HIDDEN FIELD: Type of property
     // propertyType: [''],
-    // service: ['', Validators.required],
+
+    service: ['', Validators.required],
+
+    // HIDDEN FIELD: Description
     // description: ['', [Validators.maxLength(2000), noLinks]],
+
+    // HIDDEN FIELD: Preferred date
     // preferredDate: [''],
+
+    // HIDDEN FIELD: Preferred time
     // preferredTime: [''],
   });
 
@@ -190,11 +203,11 @@ export class EstimateModalComponent {
         return 'Please tell us your name.';
       case 'phone':
         return 'Please enter a phone number we can reach you on.';
-      case 'email':
-        return 'Please check the email address — we send the written estimate there.';
-      // HIDDEN FOR NOW: uncomment with the `service` control.
-      // case 'service':
-      //   return 'Please pick the service you need.';
+      case 'service':
+        return 'Please pick the service you need.';
+      // HIDDEN FIELD: Email
+      // case 'email':
+      //   return 'Please check the email address — we send the written estimate there.';
       default:
         return 'Please check this field.';
     }
@@ -210,8 +223,9 @@ export class EstimateModalComponent {
    * The label wrapping this input in the template must not also carry a `for`
    * attribute. The input is its child, so the label already activates it;
    * adding `for` as well made some browsers fire the picker twice, which is what
-   * broke choosing several photos at once. (This note lived in the template
-   * until that block was commented out, where a nested comment cannot go.)
+   * broke choosing several photos at once. The note lives here rather than in
+   * the template so that wrapping the field in a HIDDEN FIELD comment never
+   * puts one comment inside another.
    */
   protected async onFilesPicked(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
@@ -346,13 +360,10 @@ export class EstimateModalComponent {
       const answers = this.form.getRawValue();
       this.estimate.send({
         ...answers,
-        // HIDDEN FOR NOW: uncomment with the Preferred time and photo fields.
-        // Left out, those questions were never asked, and the service writes no
-        // row for them in the email.
-        //
-        // `14:30` means nothing at a glance in an inbox at 6am.
+        // HIDDEN FIELD: Preferred time. `14:30` means nothing at a glance in an
+        // inbox at 6am, so it goes out in 12-hour form.
         // preferredTime: formatTime(answers.preferredTime),
-        // photos: this.photos().map((photo) => photo.file),
+        photos: this.photos().map((photo) => photo.file),
       });
     } catch (error) {
       this.status.set('error');

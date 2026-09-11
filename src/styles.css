@@ -1167,3 +1167,122 @@ body.rm-modal-open { overflow: hidden; }
   overflow-wrap: anywhere;
 }
 .rm-envbar__item strong { color: #fff; font-weight: 600; }
+
+/* -------------------------------------------------------------- contact pop-up */
+/* The "Hello, Contact Us" card that slides in once per visit. Sits below the
+   estimate modal (1000) so opening the form always covers it, and well below
+   tawk.to's own chat window, which stacks itself above everything. */
+.rm-chatpop {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 950;
+  width: min(340px, calc(100vw - 32px));
+  padding: 22px 22px 20px;
+  background: var(--rm-white);
+  border-radius: 18px;
+  box-shadow: var(--rm-shadow-lg);
+  animation: rm-chatpop-in .28s cubic-bezier(.2, .8, .3, 1) both;
+}
+
+@keyframes rm-chatpop-in {
+  from { opacity: 0; transform: translateY(16px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rm-chatpop { animation: none; }
+}
+
+.rm-chatpop__close {
+  position: absolute; top: 12px; right: 12px;
+  width: 34px; height: 34px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.6rem; line-height: 1;
+  color: var(--rm-muted);
+  background: transparent;
+  border: 0; border-radius: 50%;
+  cursor: pointer;
+}
+.rm-chatpop__close:hover { background: var(--rm-surface); color: var(--rm-ink); }
+
+.rm-chatpop__avatar { position: relative; width: 56px; height: 56px; }
+.rm-chatpop__avatar img {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #fff;
+  border: 1px solid var(--rm-line);
+}
+
+.rm-chatpop__online {
+  position: absolute; top: 2px; right: 0;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: #22b35e;
+  border: 2px solid #fff;
+}
+
+.rm-chatpop__title {
+  margin: 16px 0 6px;
+  font-family: var(--rm-display);
+  font-size: 1.6rem; font-weight: 800; line-height: 1.1;
+  color: var(--rm-ink);
+}
+
+.rm-chatpop__text {
+  margin: 0 0 18px;
+  font-size: .98rem; line-height: 1.5;
+  color: var(--rm-text);
+}
+
+.rm-chatpop__cta { width: 100%; justify-content: center; }
+
+/* Full width on phones, lifted clear of the home indicator. */
+@media (max-width: 480px) {
+  .rm-chatpop {
+    left: 16px; right: 16px;
+    width: auto;
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* "Text us": what the contact card leaves behind when it is closed, and how it
+   comes back. Same corner and layer as the card, since the two swap places. */
+.rm-chatlaunch {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 950;
+  display: inline-flex; align-items: center; gap: 10px;
+  min-height: 48px;
+  padding: 12px 22px 12px 18px;
+  font-family: var(--rm-display);
+  font-size: .95rem; font-weight: 800; letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(180deg, var(--rm-red-light), var(--rm-red));
+  border: 0;
+  border-radius: 999px;
+  box-shadow: 0 10px 26px rgba(216, 30, 39, .38);
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+  /* `backwards`, not `both`: a held end state would override the hover lift. */
+  animation: rm-chatlaunch-in .24s ease backwards;
+}
+.rm-chatlaunch rm-icon { width: 20px; height: 20px; flex: none; }
+.rm-chatlaunch:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(216, 30, 39, .45); }
+.rm-chatlaunch:active { transform: translateY(0); }
+
+@keyframes rm-chatlaunch-in {
+  from { opacity: 0; transform: translateY(10px) scale(.95); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rm-chatlaunch { animation: none; transition: none; }
+}
+
+@media (max-width: 480px) {
+  .rm-chatlaunch { right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+}
