@@ -45,7 +45,7 @@
 
           <div class="rm-form__grid">
 
-            <div class="rm-field" [class.rm-field--invalid]="invalid('fullName')">
+            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('fullName')">
               <label for="rm-name">Full name <span class="rm-req" aria-hidden="true">*</span></label>
               <input id="rm-name" type="text" formControlName="fullName"
                      autocomplete="name" placeholder="Jane Doe"
@@ -56,7 +56,7 @@
               }
             </div>
 
-            <div class="rm-field" [class.rm-field--invalid]="invalid('phone')">
+            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('phone')">
               <label for="rm-phone">Phone number <span class="rm-req" aria-hidden="true">*</span></label>
               <input id="rm-phone" type="tel" formControlName="phone"
                      autocomplete="tel" inputmode="tel" placeholder="(707) 555-0123"
@@ -67,8 +67,8 @@
               }
             </div>
 
-            <div class="rm-field" [class.rm-field--invalid]="invalid('email')">
-              <label for="rm-email">Email address <span class="rm-req" aria-hidden="true">*</span></label>
+            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('email')">
+              <label for="rm-email">Email address <span class="rm-optional">(optional)</span></label>
               <input id="rm-email" type="email" formControlName="email"
                      autocomplete="email" inputmode="email" placeholder="you@example.com"
                      [attr.aria-invalid]="invalid('email') || null"
@@ -78,6 +78,19 @@
               }
             </div>
 
+            <!-- HIDDEN FOR NOW. The client asked for name, phone and email only,
+                 so the fields below are commented out rather than deleted.
+
+                 To bring them back:
+                   1. Delete the "HIDDEN FOR NOW: BEGIN" and "HIDDEN FOR NOW: END"
+                      lines that wrap the block.
+                   2. Uncomment the matching form controls in estimate-modal.ts
+                      (search for "HIDDEN FOR NOW" there too).
+                   3. In estimate-modal.spec.ts, set FIELDS_HIDDEN to false.
+
+                 The photo picker's label deliberately has no `for` attribute;
+                 the reason is on onFilesPicked in estimate-modal.ts. -->
+            <!-- HIDDEN FOR NOW: BEGIN
             <div class="rm-field" [class.rm-field--invalid]="invalid('city')">
               <label for="rm-city">City</label>
               <input id="rm-city" type="text" formControlName="city"
@@ -160,10 +173,6 @@
                 Large photos are resized on your device before sending.
               </p>
 
-              <!-- No `for` attribute on purpose. The input is a child, so the
-                   label already activates it; adding `for` as well made some
-                   browsers fire the picker twice, which is what broke choosing
-                   several photos at once. -->
               <label class="rm-upload"
                      [class.rm-upload--busy]="compressing()"
                      [class.rm-upload--drag]="dragging()"
@@ -204,6 +213,7 @@
                 <p class="rm-field__error">{{ fileError() }}</p>
               }
             </div>
+            HIDDEN FOR NOW: END -->
 
           </div>
 

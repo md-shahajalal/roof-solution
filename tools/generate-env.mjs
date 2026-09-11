@@ -77,14 +77,14 @@ const VARS = [
     name: 'RM_EMAIL',
     key: 'email',
     fallback: 'roofingsolutionsrm@gmail.com',
-    development: '6mehedihasan017015@gmail.com',
+    development: 'mdshahajalal168@gmail.com',
     note: 'Public contact address, shown in the footer and linked with mailto:.',
   },
   {
     name: 'RM_FORM_TOKEN',
     key: 'formToken',
     fallback: 'roofingsolutionsrm@gmail.com',
-    development: '6mehedihasan017015@gmail.com',
+    development: 'mdshahajalal168@gmail.com',
     note: 'FormSubmit endpoint: the destination address, or the random string standing in for it.',
   },
 ];

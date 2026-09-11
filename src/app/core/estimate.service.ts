@@ -5,15 +5,20 @@ import { ESTIMATE_FORM } from './site.config';
 export interface EstimateRequest {
   fullName: string;
   phone: string;
+  /** Optional on the form. Empty when the visitor left it blank. */
   email: string;
-  propertyAddress: string;
-  city: string;
-  propertyType: string;
-  service: string;
-  description: string;
-  preferredDate: string;
-  preferredTime: string;
-  photos: readonly File[];
+
+  // Present only while the matching fields are switched on (see HIDDEN FOR NOW
+  // in the modal). Absent means the question was not asked, so `send` writes
+  // no row for it; an empty string means it was asked and left blank.
+  propertyAddress?: string;
+  city?: string;
+  propertyType?: string;
+  service?: string;
+  description?: string;
+  preferredDate?: string;
+  preferredTime?: string;
+  photos?: readonly File[];
 }
 
 /**
@@ -128,7 +133,8 @@ export class EstimateService {
 
     // FormSubmit reads every underscore-prefixed name as an instruction rather
     // than as a form field, so none of these appear in the email body.
-    field('_subject', `Free estimate request — ${request.fullName} (${request.service})`);
+    const about = request.service ? ` (${request.service})` : '';
+    field('_subject', `Free estimate request — ${request.fullName}${about}`);
     field('_template', 'table');
     field('_captcha', String(ESTIMATE_FORM.captcha));
     // Built from the current origin so the same bundle returns to whichever host
@@ -137,30 +143,42 @@ export class EstimateService {
     // Honeypot. A bot fills every field it finds; a human never sees this one,
     // so anything arriving with it set is discarded by FormSubmit.
     field('_honey', '');
-    // Lets the owner hit Reply in Gmail and land in the customer's inbox.
-    field('_replyto', request.email);
+    // Lets the owner hit Reply in Gmail and land in the customer's inbox. Only
+    // when there is an inbox to land in: the address is optional.
+    if (request.email) field('_replyto', request.email);
 
 
     field('Full name', request.fullName);
     field('Phone number', request.phone);
-    // Named `email`, not something prettier: FormSubmit only honours `_replyto`
-    // and `_autoresponse` when it can find a field by exactly that name.
-    field('email', request.email);
-    field('Property address', request.propertyAddress || '—');
-    field('City', request.city || '—');
-    field('Type of property', request.propertyType || '—');
-    field('Roofing service needed', request.service);
-    field('Description of the issue or project', request.description || '—');
-    field('Preferred date for inspection', request.preferredDate || 'No preference');
-    field('Preferred time', request.preferredTime || 'No preference');
-    field(
-      'Photos attached',
-      request.photos.length
-        ? request.photos.map((photo) => photo.name).join(', ')
-        : 'None',
-    );
+    if (request.email) {
+      // Named `email`, not something prettier: FormSubmit only honours
+      // `_replyto` when it can find a field by exactly that name.
+      field('email', request.email);
+    } else {
+      // Not `email`: FormSubmit may validate a field by that name, and the owner
+      // should see plainly that there is no address to reply to.
+      field('Email address', 'Not provided');
+    }
 
-    if (request.photos.length) {
+    // A row per question actually asked. `undefined` means the field is hidden,
+    // so no row; an empty answer still gets one, with a placeholder.
+    const asked = (label: string, value: string | undefined, blank: string) => {
+      if (value !== undefined) field(label, value || blank);
+    };
+    asked('Property address', request.propertyAddress, '—');
+    asked('City', request.city, '—');
+    asked('Type of property', request.propertyType, '—');
+    asked('Roofing service needed', request.service, '—');
+    asked('Description of the issue or project', request.description, '—');
+    asked('Preferred date for inspection', request.preferredDate, 'No preference');
+    asked('Preferred time', request.preferredTime, 'No preference');
+
+    const photos = request.photos ?? [];
+    if (request.photos !== undefined) {
+      field('Photos attached', photos.length ? photos.map((photo) => photo.name).join(', ') : 'None');
+    }
+
+    if (photos.length) {
       // Better to stop here with something the visitor can act on than to send
       // an enquiry whose photos quietly went missing.
       if (typeof DataTransfer !== 'function') {
@@ -168,7 +186,7 @@ export class EstimateService {
           'This browser is too old to attach photos. Please update it, or send your request without photos and email the pictures to us afterwards.',
         );
       }
-      for (const [index, photo] of request.photos.entries()) {
+      for (const [index, photo] of photos.entries()) {
         form.append(this.photoInput(photo, index));
       }
     }

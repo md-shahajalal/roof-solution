@@ -886,6 +886,15 @@ body.rm-modal-open { overflow: hidden; }
 
 .rm-req { color: var(--rm-red); font-weight: 700; }
 
+/* Sits inside a label that is set uppercase in the display face; the aside
+   reads as a quiet note rather than part of the field name. */
+.rm-optional {
+  font-family: var(--rm-body);
+  font-weight: 500; letter-spacing: 0;
+  text-transform: none;
+  color: var(--rm-muted);
+}
+
 /* ------------------------------------------------------------ form fields */
 .rm-form__grid {
   display: grid;

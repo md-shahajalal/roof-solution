@@ -85,14 +85,22 @@ export class EstimateModalComponent {
   protected readonly form = this.fb.nonNullable.group({
     fullName: ['', [Validators.required, Validators.minLength(2), noLinks]],
     phone: ['', [Validators.required, Validators.pattern(/^[0-9+()\-.\s]{7,}$/)]],
-    email: ['', [Validators.required, Validators.email]],
-    propertyAddress: ['', noLinks],
-    city: ['', noLinks],
-    propertyType: [''],
-    service: ['', Validators.required],
-    description: ['', [Validators.maxLength(2000), noLinks]],
-    preferredDate: [''],
-    preferredTime: [''],
+    // Optional. `Validators.email` passes an empty value, so this only checks
+    // the format once something has been typed.
+    email: ['', Validators.email],
+
+    // HIDDEN FOR NOW. Uncomment together with the block of the same name in
+    // estimate-modal.html. These must go with the template, not before it:
+    // `service` is required, so a live control with no visible field would
+    // leave the form impossible to submit.
+    //
+    // propertyAddress: ['', noLinks],
+    // city: ['', noLinks],
+    // propertyType: [''],
+    // service: ['', Validators.required],
+    // description: ['', [Validators.maxLength(2000), noLinks]],
+    // preferredDate: [''],
+    // preferredTime: [''],
   });
 
   /** Already downscaled. Sizes shown in the list are the sizes that get sent. */
@@ -184,8 +192,9 @@ export class EstimateModalComponent {
         return 'Please enter a phone number we can reach you on.';
       case 'email':
         return 'Please check the email address — we send the written estimate there.';
-      case 'service':
-        return 'Please pick the service you need.';
+      // HIDDEN FOR NOW: uncomment with the `service` control.
+      // case 'service':
+      //   return 'Please pick the service you need.';
       default:
         return 'Please check this field.';
     }
@@ -197,6 +206,12 @@ export class EstimateModalComponent {
    * Compression happens here rather than at submit time so the sizes listed
    * under the picker are the real sent sizes, and so the running total that
    * decides what fits is honest.
+   *
+   * The label wrapping this input in the template must not also carry a `for`
+   * attribute. The input is its child, so the label already activates it;
+   * adding `for` as well made some browsers fire the picker twice, which is what
+   * broke choosing several photos at once. (This note lived in the template
+   * until that block was commented out, where a nested comment cannot go.)
    */
   protected async onFilesPicked(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
@@ -331,9 +346,13 @@ export class EstimateModalComponent {
       const answers = this.form.getRawValue();
       this.estimate.send({
         ...answers,
+        // HIDDEN FOR NOW: uncomment with the Preferred time and photo fields.
+        // Left out, those questions were never asked, and the service writes no
+        // row for them in the email.
+        //
         // `14:30` means nothing at a glance in an inbox at 6am.
-        preferredTime: formatTime(answers.preferredTime),
-        photos: this.photos().map((photo) => photo.file),
+        // preferredTime: formatTime(answers.preferredTime),
+        // photos: this.photos().map((photo) => photo.file),
       });
     } catch (error) {
       this.status.set('error');
