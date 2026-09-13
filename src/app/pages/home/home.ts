@@ -8,6 +8,7 @@ import { WorkComponent } from './sections/work';
 import { HelpComponent } from './sections/help';
 import { ReviewsComponent } from './sections/reviews';
 import { FaqComponent } from './sections/faq';
+import { CtaComponent } from './sections/cta';
 
 /**
  * The home page is just an ordered list of bands. Reordering or dropping a
@@ -16,9 +17,9 @@ import { FaqComponent } from './sections/faq';
  * The header's scroll spy watches section ids in its own declaration order, so
  * if a section with a nav link moves, move its entry in header.ts to match.
  *
- * Backgrounds alternate white and a soft tint; there is deliberately no dark or
- * red band. Moving a section can put two of the same shade side by side, so look
- * at the page after reordering.
+ * Backgrounds alternate white and warm light grey, with charcoal bands (process,
+ * closing CTA, footer) spaced down the page for contrast. Moving a section can
+ * put two of the same shade side by side, so look at the page after reordering.
  */
 @Component({
   selector: 'rm-home',
@@ -32,6 +33,7 @@ import { FaqComponent } from './sections/faq';
     HelpComponent,
     ReviewsComponent,
     FaqComponent,
+    CtaComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -44,6 +46,7 @@ import { FaqComponent } from './sections/faq';
     <rm-help />
     <rm-reviews />
     <rm-faq />
+    <rm-cta />
   `,
 })
 export class HomeComponent {}

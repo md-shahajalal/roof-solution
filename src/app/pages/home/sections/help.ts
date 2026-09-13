@@ -32,7 +32,7 @@ import { EstimateService } from '../../../core/estimate.service';
             documentation and full restoration.
           </p>
           <div class="rm-help__actions">
-            <a class="rm-btn rm-btn--dark" [href]="telHref">
+            <a class="rm-btn rm-btn--primary" [href]="telHref">
               <span class="rm-btn__icon"><rm-icon name="phone" /></span>
               Call {{ site.phone }}
             </a>
@@ -51,7 +51,7 @@ import { EstimateService } from '../../../core/estimate.service';
             obligation.
           </p>
           <div class="rm-help__actions">
-            <button type="button" class="rm-btn rm-btn--primary" (click)="quote($event, 'Other')">
+            <button type="button" class="rm-btn rm-btn--dark" (click)="quote($event, 'Other')">
               Request a free estimate
               <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
             </button>
