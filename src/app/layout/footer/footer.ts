@@ -1,8 +1,7 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { IconComponent } from '../../shared/icon/icon';
 import { SITE, mailHref, telHref } from '../../core/site.config';
 import { SERVICES } from '../../core/content';
-import { EstimateService } from '../../core/estimate.service';
 import { environment } from '../../../environments/environment';
 import { tawkWidgetPath } from '../../core/tawk.service';
 
@@ -18,7 +17,6 @@ export class FooterComponent {
   protected readonly telHref = telHref();
   protected readonly mailHref = mailHref();
   protected readonly year = new Date().getFullYear();
-  private readonly estimate = inject(EstimateService);
 
   /**
    * Drives the development banner below the footer. Which environment file is
@@ -30,8 +28,4 @@ export class FooterComponent {
   /** The chat line in that banner: the widget in use, or why there is none. */
   protected readonly chat =
     tawkWidgetPath(environment.tawk) ?? (environment.tawk.trim() ? 'invalid link' : 'off');
-
-  protected openEstimate(event: Event): void {
-    this.estimate.open(event.currentTarget as HTMLElement);
-  }
 }

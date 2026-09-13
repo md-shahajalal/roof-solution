@@ -39,27 +39,24 @@ interface QuickOption {
           </p>
 
           <h1 class="rm-h1 rm-hero__title">
-            Roofing you can trust, <span class="rm-accent">built to last.</span>
+            Honest roof repair &amp; replacement, <span class="rm-accent">built to last.</span>
           </h1>
 
           <p class="rm-hero__lede">
-            Repairs, replacements and inspections from a licensed, fully insured crew,
-            with a free, no-pressure estimate before any work begins.
+            Repairs, replacements, inspections and storm damage across California, from a
+            licensed, fully insured crew. You see a clear price before any work starts.
           </p>
 
           <ul class="rm-hero__proof">
-            <li><rm-icon name="shield" /> Licensed &amp; insured</li>
-            <li><rm-icon name="medal" /> {{ site.license.display }}</li>
-            <li><rm-icon name="clock" /> {{ site.hours }}</li>
+            <li><rm-icon name="check" /> Free, no-pressure estimates</li>
+            <li><rm-icon name="check" /> Honest repair-or-replace advice</li>
+            <li><rm-icon name="check" /> Workmanship guaranteed</li>
           </ul>
 
+          <!-- Call only. The card beside this is already step one of the estimate,
+               so an estimate button here would be the same action twice. -->
           <div class="rm-hero__actions">
-            <button type="button" class="rm-btn rm-btn--primary rm-btn--lg"
-                    (click)="openEstimate($event)">
-              Get a free estimate
-              <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
-            </button>
-            <a class="rm-btn rm-btn--outline-light rm-btn--lg" [href]="telHref">
+            <a class="rm-btn rm-btn--primary rm-btn--lg" [href]="telHref">
               <span class="rm-btn__icon"><rm-icon name="phone" /></span>
               {{ site.phone }}
             </a>
@@ -103,14 +100,6 @@ export class HeroComponent {
     ...SERVICES.map((service) => ({ label: service.title, icon: service.icon, quote: service.quote })),
     { label: 'Not sure / other', icon: 'chat', quote: 'Other' },
   ];
-
-  /**
-   * Opens the estimate dialog. The button is passed along so focus can return
-   * to exactly where the visitor left it when the dialog closes.
-   */
-  protected openEstimate(event: Event): void {
-    this.estimate.open(event.currentTarget as HTMLElement);
-  }
 
   /** Step one done: open the form on step two with the service already chosen. */
   protected start(event: Event, quote: string): void {

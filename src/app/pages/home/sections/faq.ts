@@ -1,18 +1,17 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { IconComponent } from '../../../shared/icon/icon';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { FAQS } from '../../../core/content';
 import { SITE, telHref } from '../../../core/site.config';
-import { EstimateService } from '../../../core/estimate.service';
 
 /**
  * Native `<details>` rather than a scripted accordion: keyboard and screen-reader
  * support come for free, and every answer is in the page for search engines even
  * while collapsed. The shared `name` makes them close one another in browsers
  * that support it, and is simply ignored in the rest.
+ *
+ * No estimate button: the closing band directly below carries it.
  */
 @Component({
   selector: 'rm-faq',
-  imports: [IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="rm-faq" id="faq">
@@ -25,10 +24,6 @@ import { EstimateService } from '../../../core/estimate.service';
             Can't find your answer? Call us on <a [href]="telHref">{{ site.phone }}</a>
             and we'll be glad to help.
           </p>
-          <button type="button" class="rm-btn rm-btn--primary" (click)="openEstimate($event)">
-            Get a free estimate
-            <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
-          </button>
         </div>
 
         <div class="rm-faq__list">
@@ -51,9 +46,4 @@ export class FaqComponent {
   protected readonly faqs = FAQS;
   protected readonly site = SITE;
   protected readonly telHref = telHref();
-  private readonly estimate = inject(EstimateService);
-
-  protected openEstimate(event: Event): void {
-    this.estimate.open(event.currentTarget as HTMLElement);
-  }
 }

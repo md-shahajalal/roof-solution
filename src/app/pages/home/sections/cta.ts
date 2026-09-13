@@ -20,6 +20,11 @@ import { EstimateService } from '../../../core/estimate.service';
           <p class="rm-cta__text">
             Get a free, no-pressure estimate, or call now and talk to our team.
           </p>
+          <ul class="rm-cta__points">
+            <li><rm-icon name="check" /> Free estimate</li>
+            <li><rm-icon name="check" /> No obligation</li>
+            <li><rm-icon name="check" /> {{ site.license.display }}</li>
+          </ul>
         </div>
 
         <div class="rm-cta__actions">

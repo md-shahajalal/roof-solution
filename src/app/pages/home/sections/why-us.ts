@@ -1,9 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
-import { WHY_POINTS } from '../../../core/content';
+import { FEATURES } from '../../../core/content';
 import { SITE } from '../../../core/site.config';
-import { EstimateService } from '../../../core/estimate.service';
 
+/**
+ * The page's one dark band. A long run of white sections reads as a template;
+ * a deep navy break in the middle gives the page a rhythm, and puts the reasons
+ * to hire R&M on the most visually weighted ground below the hero.
+ */
 @Component({
   selector: 'rm-why-us',
   imports: [IconComponent],
@@ -33,22 +37,17 @@ import { EstimateService } from '../../../core/estimate.service';
             quality materials, and work we stand behind.
           </p>
 
-          <ul class="rm-why__list">
-            @for (point of points; track point) {
-              <li>
-                <span class="rm-why__check"><rm-icon name="check" /></span>
-                <span>{{ point }}</span>
+          <ul class="rm-features">
+            @for (feature of features; track feature.title) {
+              <li class="rm-feature">
+                <span class="rm-feature__icon"><rm-icon [name]="feature.icon" /></span>
+                <span>
+                  <span class="rm-feature__title">{{ feature.title }}</span>
+                  <span class="rm-feature__text">{{ feature.text }}</span>
+                </span>
               </li>
             }
           </ul>
-
-          <div class="rm-why__actions">
-            <button type="button" class="rm-btn rm-btn--primary" (click)="openEstimate($event)">
-              Get a free estimate
-              <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
-            </button>
-            <span class="rm-why__license"><rm-icon name="shield" /> {{ site.license.display }}</span>
-          </div>
         </div>
 
       </div>
@@ -56,11 +55,6 @@ import { EstimateService } from '../../../core/estimate.service';
   `,
 })
 export class WhyUsComponent {
-  protected readonly points = WHY_POINTS;
+  protected readonly features = FEATURES;
   protected readonly site = SITE;
-  private readonly estimate = inject(EstimateService);
-
-  protected openEstimate(event: Event): void {
-    this.estimate.open(event.currentTarget as HTMLElement);
-  }
 }

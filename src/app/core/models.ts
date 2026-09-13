@@ -20,6 +20,16 @@ export interface Service {
    * Must match that list exactly, or the form opens with nothing selected.
    */
   quote: string;
+  /** What the service covers, shown as a short checklist on its card. */
+  points: readonly string[];
+}
+
+/** One cell of the credentials panel under the hero. */
+export interface Credential {
+  icon: IconName;
+  /** The big word: "Licensed", "24/7". */
+  value: string;
+  label: string;
 }
 
 export interface ProcessStep {

@@ -1,4 +1,12 @@
-import type { Faq, ProcessStep, Service, Testimonial, TrustItem, WorkPhase } from './models';
+import type {
+  Credential,
+  Faq,
+  ProcessStep,
+  Service,
+  Testimonial,
+  TrustItem,
+  WorkPhase,
+} from './models';
 import { SITE } from './site.config';
 
 /**
@@ -6,19 +14,39 @@ import { SITE } from './site.config';
  * HTTP call to a CMS without touching a single component's markup.
  */
 
-export const TRUST_ITEMS: readonly TrustItem[] = [
-  { icon: 'shield', title: 'Fully insured',    text: 'Licensed, bonded, and covered on every job.' },
-  { icon: 'medal',  title: 'Quality work',     text: 'Built to last with premium materials.' },
-  { icon: 'team',   title: 'Experienced team', text: 'Skilled professionals you can trust.' },
-  { icon: 'clock',  title: '24/7 support',     text: 'We answer when the storm does not wait.' },
+/**
+ * The credentials panel under the hero. Shaped like a statistics band, but every
+ * value is a fact the business already publishes. See the note on TrustComponent.
+ */
+export const CREDENTIALS: readonly Credential[] = [
+  { icon: 'medal',  value: 'Licensed', label: SITE.license.display },
+  { icon: 'shield', value: 'Insured',  label: 'Bonded and covered on every job' },
+  { icon: 'check',  value: 'Free',     label: 'No-obligation estimates' },
+  { icon: 'clock',  value: '24/7',     label: 'Emergency roof line' },
 ];
 
+/** The six reasons in "Why choose R&M". Each restates a claim made elsewhere on the site. */
+export const FEATURES: readonly TrustItem[] = [
+  { icon: 'shield', title: 'Licensed & insured',     text: `${SITE.license.display}, bonded and covered on every job.` },
+  { icon: 'search', title: 'Honest estimates',       text: 'A clear price before work starts, and straight advice on repair or replace.' },
+  { icon: 'medal',  title: 'Quality materials',      text: 'Built to last with premium materials.' },
+  { icon: 'team',   title: 'Experienced team',       text: 'Skilled professionals you can trust on your roof.' },
+  { icon: 'hammer', title: 'Workmanship guaranteed', text: 'We stand behind every job we do.' },
+  { icon: 'clock',  title: '24/7 emergency line',    text: 'We answer when the storm does not wait.' },
+];
+
+/**
+ * TODO(client): confirm each service's `points`. They are drawn from what the
+ * site already says and from the job photos (decking, ridge vents, flashing),
+ * but the owner should check they match what a crew actually does.
+ */
 export const SERVICES: readonly Service[] = [
   {
     slug: 'roof-replacement',
     quote: 'Roof Replacement',
     title: 'Roof replacement',
     text: 'Durable, long-lasting roofs installed with precision.',
+    points: ['Tear-off and new decking where needed', 'Ridge vents, caps and flashing', 'Premium, long-lasting materials'],
     icon: 'house',
     image: '/images/service-roof-replacement.jpg',
     alt: 'A newly installed architectural shingle roof seen along the ridge line',
@@ -28,6 +56,7 @@ export const SERVICES: readonly Service[] = [
     quote: 'Roof Repair',
     title: 'Roof repair',
     text: 'Fast, reliable repairs that stop the leak the same week.',
+    points: ['Leaks traced and stopped', 'Damaged or missing shingles', 'A clear price before work starts'],
     icon: 'hammer',
     image: '/images/service-roof-repair.jpg',
     alt: 'A roofer fastening replacement shingles with a coil nailer',
@@ -37,6 +66,7 @@ export const SERVICES: readonly Service[] = [
     quote: 'Roof Inspection',
     title: 'Roof inspection',
     text: 'Thorough inspections that catch problems early.',
+    points: ['Findings explained in plain language', 'Honest repair-or-replace advice'],
     icon: 'search',
     image: '/images/service-roof-inspection.jpg',
     alt: 'A brick home with a steep shingle roof and covered porch',
@@ -46,6 +76,7 @@ export const SERVICES: readonly Service[] = [
     quote: 'Storm Damage',
     title: 'Storm damage',
     text: 'Emergency tarping, documentation, and full restoration.',
+    points: ['Emergency tarping', 'Damage documentation', 'Full restoration'],
     icon: 'storm',
     image: '/images/service-storm-damage.jpg',
     alt: 'Lightning striking behind a residential street during a storm',
@@ -55,18 +86,11 @@ export const SERVICES: readonly Service[] = [
     quote: 'Maintenance',
     title: 'Maintenance',
     text: 'Seasonal checkups that keep your roof in top condition.',
+    points: ['Seasonal checkups', 'Small problems caught early'],
     icon: 'wrench',
     image: '/images/service-maintenance.jpg',
     alt: 'Close-up of shingles, soffit vents and fascia at a gable end',
   },
-];
-
-export const WHY_POINTS: readonly string[] = [
-  'Professional and reliable service',
-  'Top quality materials',
-  'Honest estimates',
-  'Customer satisfaction',
-  'Workmanship guaranteed',
 ];
 
 /**

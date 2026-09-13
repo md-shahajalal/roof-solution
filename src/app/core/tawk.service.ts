@@ -26,6 +26,9 @@ interface TawkApi {
   showWidget?: () => void;
   maximize?: () => void;
   getStatus?: () => TawkStatus;
+  customStyle?: {
+    visibility: Record<'desktop' | 'mobile', { position: 'br'; xOffset: number; yOffset: number }>;
+  };
 }
 
 declare global {
@@ -110,6 +113,16 @@ export class TawkService {
     // and reads the callbacks off them when it does.
     const api: TawkApi = (window.Tawk_API = window.Tawk_API ?? {});
     window.Tawk_LoadStart = new Date();
+
+    // On phones the site pins a Call / Free estimate bar to the bottom of the
+    // screen (ActionDockComponent), so the chat icon is lifted clear of it.
+    // tawk.to reads this once, when its script starts.
+    api.customStyle = {
+      visibility: {
+        desktop: { position: 'br', xOffset: 20, yOffset: 20 },
+        mobile: { position: 'br', xOffset: 16, yOffset: 84 },
+      },
+    };
 
     // Hide before tawk.to draws anything. tawk.to renders its widget visible
     // first and only calls onLoad afterwards, so hiding there alone left the

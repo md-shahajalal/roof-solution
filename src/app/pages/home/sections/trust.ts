@@ -1,41 +1,32 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
-import { TRUST_ITEMS } from '../../../core/content';
-import { SITE } from '../../../core/site.config';
+import { CREDENTIALS } from '../../../core/content';
 
 /**
- * The credentials band under the hero: who the business is, and the four things
- * a homeowner checks before letting a contractor on the roof.
+ * The credentials panel pulled up over the bottom edge of the hero.
  *
- * Deliberately no statistics. Reference sites lead with "25+ years" and review
- * counts because theirs are real; numbers invented to look the part are the one
- * thing here that could cost the business a customer's trust.
+ * It borrows the shape of a statistics band, a big value over a short label,
+ * because that is what a homeowner's eye scans for first. Deliberately no
+ * statistics, though. Reference sites lead with "25+ years" and review counts
+ * because theirs are real; numbers invented to look the part are the one thing
+ * here that could cost the business a customer's trust. Every value below is a
+ * fact the site already publishes.
  */
 @Component({
   selector: 'rm-trust',
   imports: [IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="rm-intro" aria-labelledby="rm-intro-title">
-      <div class="rm-container rm-intro__inner">
-        <div class="rm-intro__copy">
-          <p class="rm-eyebrow">Why homeowners call R&amp;M</p>
-          <h2 class="rm-h2" id="rm-intro-title">
-            Straightforward roofing from a <span class="rm-accent">licensed, insured</span> team
-          </h2>
-          <p class="rm-lead">
-            R&amp;M Roofing Solutions repairs, replaces and inspects roofs across California.
-            Every job is done under {{ site.license.display }} by a fully insured crew, and it
-            starts with a free, honest estimate.
-          </p>
-        </div>
-
-        <ul class="rm-intro__grid">
-          @for (item of items; track item.title) {
-            <li class="rm-intro__item">
-              <span class="rm-intro__icon"><rm-icon [name]="item.icon" /></span>
-              <span class="rm-intro__title">{{ item.title }}</span>
-              <span class="rm-intro__text">{{ item.text }}</span>
+    <section class="rm-creds" aria-label="Credentials">
+      <div class="rm-container">
+        <ul class="rm-creds__panel">
+          @for (item of items; track item.value) {
+            <li class="rm-creds__item">
+              <span class="rm-creds__icon"><rm-icon [name]="item.icon" /></span>
+              <span>
+                <span class="rm-creds__value">{{ item.value }}</span>
+                <span class="rm-creds__label">{{ item.label }}</span>
+              </span>
             </li>
           }
         </ul>
@@ -44,6 +35,5 @@ import { SITE } from '../../../core/site.config';
   `,
 })
 export class TrustComponent {
-  protected readonly items = TRUST_ITEMS;
-  protected readonly site = SITE;
+  protected readonly items = CREDENTIALS;
 }

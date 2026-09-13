@@ -5,6 +5,7 @@ import { HeaderComponent } from './layout/header/header';
 import { FooterComponent } from './layout/footer/footer';
 import { EstimateModalComponent } from './shared/estimate-modal/estimate-modal';
 import { ContactPopupComponent } from './shared/contact-popup/contact-popup';
+import { ActionDockComponent } from './layout/action-dock/action-dock';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +15,7 @@ import { ContactPopupComponent } from './shared/contact-popup/contact-popup';
     FooterComponent,
     EstimateModalComponent,
     ContactPopupComponent,
+    ActionDockComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -23,6 +25,9 @@ import { ContactPopupComponent } from './shared/contact-popup/contact-popup';
       <router-outlet />
     </main>
     <rm-footer />
+
+    <!-- Phones only: Call and Free estimate pinned to the bottom of the screen. -->
+    <rm-action-dock />
 
     <!-- Mounted once here so every "Get a free estimate" button on the page,
          header and footer included, opens the same dialog above everything. -->

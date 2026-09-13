@@ -25,10 +25,11 @@ import { PROCESS_STEPS } from '../../../core/content';
         <ol class="rm-process__list">
           @for (step of steps; track step.title; let i = $index) {
             <li class="rm-process__step">
-              <span class="rm-process__icon">
-                <rm-icon [name]="step.icon" />
-                <span class="rm-process__num">{{ i + 1 }}</span>
-              </span>
+              <div class="rm-process__top">
+                <span class="rm-process__icon"><rm-icon [name]="step.icon" /></span>
+                <!-- Decorative: the ordered list already tells a screen reader the step. -->
+                <span class="rm-process__num" aria-hidden="true">0{{ i + 1 }}</span>
+              </div>
               <h3 class="rm-h3 rm-process__title">{{ step.title }}</h3>
               <p class="rm-process__text">{{ step.text }}</p>
             </li>

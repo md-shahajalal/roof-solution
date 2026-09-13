@@ -5,6 +5,7 @@ import { ServicesComponent } from './sections/services';
 import { ProcessComponent } from './sections/process';
 import { WhyUsComponent } from './sections/why-us';
 import { WorkComponent } from './sections/work';
+import { HelpComponent } from './sections/help';
 import { ReviewsComponent } from './sections/reviews';
 import { FaqComponent } from './sections/faq';
 import { CtaComponent } from './sections/cta';
@@ -15,6 +16,10 @@ import { CtaComponent } from './sections/cta';
  *
  * The header's scroll spy watches section ids in its own declaration order, so
  * if a section with a nav link moves, move its entry in header.ts to match.
+ *
+ * Backgrounds alternate white and tint, with one dark band (why-us) in the
+ * middle. Moving a section can put two of the same shade side by side, so look
+ * at the page after reordering.
  */
 @Component({
   selector: 'rm-home',
@@ -22,9 +27,10 @@ import { CtaComponent } from './sections/cta';
     HeroComponent,
     TrustComponent,
     ServicesComponent,
-    ProcessComponent,
     WhyUsComponent,
     WorkComponent,
+    ProcessComponent,
+    HelpComponent,
     ReviewsComponent,
     FaqComponent,
     CtaComponent,
@@ -34,9 +40,10 @@ import { CtaComponent } from './sections/cta';
     <rm-hero />
     <rm-trust />
     <rm-services />
-    <rm-process />
     <rm-why-us />
     <rm-work />
+    <rm-process />
+    <rm-help />
     <rm-reviews />
     <rm-faq />
     <rm-cta />
