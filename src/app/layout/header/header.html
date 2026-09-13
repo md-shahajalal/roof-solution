@@ -1,3 +1,19 @@
+<!-- Scrolls away with the page. Licence and insurance are the first things a
+     homeowner checks, so they sit above everything else. -->
+<div class="rm-topbar">
+  <div class="rm-container rm-topbar__inner">
+    <span class="rm-topbar__item">
+      <rm-icon name="shield" /> Licensed &amp; insured &middot; {{ site.license.display }}
+    </span>
+    <span class="rm-topbar__item">
+      <rm-icon name="clock" /> {{ site.hours }}
+    </span>
+    <a class="rm-topbar__call" [href]="telHref">
+      Free estimates &mdash; call <strong>{{ site.phone }}</strong>
+    </a>
+  </div>
+</div>
+
 <header class="rm-header" [class.is-stuck]="stuck()" [class.is-compact]="compact()">
   <div class="rm-container rm-header__inner">
 
@@ -7,8 +23,8 @@
     </a>
 
     <!-- Mobile only. The desktop header carries the number in .rm-header__aside,
-         which is hidden below 900px, so without this the number is buried behind
-         the hamburger — one tap too far for someone standing under a leak. -->
+         which is hidden on small screens, so without this the number is buried
+         behind the hamburger — one tap too far for someone standing under a leak. -->
     <a class="rm-header__call" [href]="telHref" [attr.aria-label]="'Call ' + site.phone">
       <span class="rm-header__call-ring"><rm-icon name="phone" /></span>
       <span class="rm-header__call-number">{{ site.phone }}</span>
@@ -55,8 +71,7 @@
       </div>
 
       <button type="button" class="rm-btn rm-btn--primary rm-btn--sm" (click)="openEstimate($event)">
-        Get a free estimate
-        <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
+        Free estimate
       </button>
     </div>
 

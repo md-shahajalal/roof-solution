@@ -145,6 +145,12 @@ export class EstimateModalComponent {
       untracked(() => {
         this.reset();
 
+        // A service picked before opening, on a "Get a free quote" button.
+        // `get` rather than `controls.service`, so hiding that field later
+        // cannot break the build here — the preset is simply ignored.
+        const preset = this.estimate.consumePreset();
+        if (preset.service) this.form.get('service')?.setValue(preset.service);
+
         // A visitor arriving back from FormSubmit lands straight on the
         // thank-you rather than on an empty form they already filled in.
         if (this.estimate.consumeReturn()) {

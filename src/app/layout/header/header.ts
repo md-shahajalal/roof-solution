@@ -34,6 +34,7 @@ export class HeaderComponent {
     { id: 'about', label: 'About us' },
     { id: 'work', label: 'Our work' },
     { id: 'reviews', label: 'Reviews' },
+    { id: 'faq', label: 'FAQ' },
     { id: 'contact', label: 'Contact' },
   ];
 

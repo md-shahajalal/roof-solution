@@ -212,6 +212,19 @@ describe('EstimateModalComponent', () => {
     expect(photoField?.querySelector('.rm-optional')?.textContent).toContain('optional');
   });
 
+  withFields('service')('starts on the service chosen before the form opened', async () => {
+    estimate.open(null, { service: 'Storm Damage' });
+    await fixture.whenStable();
+    expect((field('#rm-service') as HTMLSelectElement).value).toBe('Storm Damage');
+
+    // A plain open afterwards must not inherit the earlier choice.
+    estimate.close();
+    await fixture.whenStable();
+    estimate.open();
+    await fixture.whenStable();
+    expect((field('#rm-service') as HTMLSelectElement).value).toBe('');
+  });
+
   withFields('service')('offers every service the business provides', async () => {
     estimate.open();
     await fixture.whenStable();

@@ -1,4 +1,5 @@
-import type { Service, Testimonial, TrustItem, WorkPhase } from './models';
+import type { Faq, ProcessStep, Service, Testimonial, TrustItem, WorkPhase } from './models';
+import { SITE } from './site.config';
 
 /**
  * Page content, kept out of the templates so it can later be swapped for an
@@ -15,6 +16,7 @@ export const TRUST_ITEMS: readonly TrustItem[] = [
 export const SERVICES: readonly Service[] = [
   {
     slug: 'roof-replacement',
+    quote: 'Roof Replacement',
     title: 'Roof replacement',
     text: 'Durable, long-lasting roofs installed with precision.',
     icon: 'house',
@@ -23,6 +25,7 @@ export const SERVICES: readonly Service[] = [
   },
   {
     slug: 'roof-repair',
+    quote: 'Roof Repair',
     title: 'Roof repair',
     text: 'Fast, reliable repairs that stop the leak the same week.',
     icon: 'hammer',
@@ -31,6 +34,7 @@ export const SERVICES: readonly Service[] = [
   },
   {
     slug: 'roof-inspection',
+    quote: 'Roof Inspection',
     title: 'Roof inspection',
     text: 'Thorough inspections that catch problems early.',
     icon: 'search',
@@ -39,6 +43,7 @@ export const SERVICES: readonly Service[] = [
   },
   {
     slug: 'storm-damage',
+    quote: 'Storm Damage',
     title: 'Storm damage',
     text: 'Emergency tarping, documentation, and full restoration.',
     icon: 'storm',
@@ -47,6 +52,7 @@ export const SERVICES: readonly Service[] = [
   },
   {
     slug: 'maintenance',
+    quote: 'Maintenance',
     title: 'Maintenance',
     text: 'Seasonal checkups that keep your roof in top condition.',
     icon: 'wrench',
@@ -169,6 +175,73 @@ export const TESTIMONIALS: readonly Testimonial[] = [
     text: 'Best roofing company we have worked with. Very professional and trustworthy.',
     author: 'Jessica Bennett',
     rating: 5,
+  },
+];
+
+/**
+ * The "How it works" steps.
+ *
+ * Every step restates something the site already commits to elsewhere — the
+ * one-business-day reply from the form's confirmation, the no-obligation
+ * estimate, the experienced team and guaranteed workmanship — so the section
+ * adds no promise the business has not already made.
+ *
+ * TODO(client): confirm this matches how a job actually runs.
+ */
+export const PROCESS_STEPS: readonly ProcessStep[] = [
+  {
+    icon: 'phone',
+    title: 'Tell us about your roof',
+    text: 'Call, message us, or send the free estimate form. We get back to you within one business day.',
+  },
+  {
+    icon: 'search',
+    title: 'We take a look',
+    text: 'We come out, check the roof, and explain what we find in plain language.',
+  },
+  {
+    icon: 'check',
+    title: 'You get a clear estimate',
+    text: 'You see the price before any work starts, with no pressure and no obligation.',
+  },
+  {
+    icon: 'hammer',
+    title: 'We do the work right',
+    text: 'Our experienced team completes the job with quality materials and guaranteed workmanship.',
+  },
+];
+
+/**
+ * Frequently asked questions, answered only from what the site already states:
+ * the licence, insurance, free estimates, the 24/7 line, storm services and the
+ * service area. Nothing here should need a fact the business has not published.
+ *
+ * TODO(client): add the questions customers really ask on the phone.
+ */
+export const FAQS: readonly Faq[] = [
+  {
+    q: 'Is the estimate really free?',
+    a: 'Yes. We come out, look at the roof and give you a price, with no cost and no obligation to go ahead.',
+  },
+  {
+    q: 'Are you licensed and insured?',
+    a: `Yes. R&M Roofing Solutions holds ${SITE.license.display}, and every job is licensed, bonded and insured.`,
+  },
+  {
+    q: 'Should I repair my roof or replace it?',
+    a: 'It depends on the age and condition of the roof. We will inspect it and tell you honestly whether a repair will do the job or a replacement makes more sense.',
+  },
+  {
+    q: 'Can you help with storm damage or an emergency leak?',
+    a: `Yes. Our emergency line is open 24/7 on ${SITE.phone}, and we handle emergency tarping, documentation and full restoration.`,
+  },
+  {
+    q: 'What areas do you serve?',
+    a: 'We serve homeowners across California. Call us or send an estimate request, and we will confirm we cover your address.',
+  },
+  {
+    q: 'How do I get started?',
+    a: `Call ${SITE.phone} or request a free estimate online. We get back to you within one business day.`,
   },
 ];
 

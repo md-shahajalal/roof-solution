@@ -1,6 +1,16 @@
 import { Injectable, signal } from '@angular/core';
 import { ESTIMATE_FORM } from './site.config';
 
+/**
+ * What the form should already have filled in when it opens — for example the
+ * service picked on a "Get a free quote" button, so the visitor does not have
+ * to choose it a second time.
+ */
+export interface EstimatePreset {
+  /** Must match an option in the form's service list exactly. */
+  service?: string;
+}
+
 /** One submitted enquiry, exactly the field list the client asked for. */
 export interface EstimateRequest {
   fullName: string;
@@ -60,7 +70,21 @@ export class EstimateService {
     this.readReturn();
   }
 
-  open(trigger?: HTMLElement | null): void {
+  /** Held from `open` until the form reads it, then cleared. */
+  private preset: EstimatePreset = {};
+
+  /**
+   * Hands the form its preset once, and forgets it, so a later plain "Get a
+   * free estimate" never inherits a service chosen on an earlier visit to it.
+   */
+  consumePreset(): EstimatePreset {
+    const preset = this.preset;
+    this.preset = {};
+    return preset;
+  }
+
+  open(trigger?: HTMLElement | null, preset: EstimatePreset = {}): void {
+    this.preset = preset;
     this.returnFocusTo = trigger ?? (document.activeElement as HTMLElement | null);
     this.open$.set(true);
     // The page behind a fixed-position overlay must not scroll with it.

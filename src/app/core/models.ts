@@ -14,6 +14,23 @@ export interface Service {
   image: string;
   /** Describes the photograph, not the service. Used for alt text. */
   alt: string;
+  /**
+   * The matching option in the estimate form's "Roofing service needed" list,
+   * so a "Get a free quote" button can open the form with it already chosen.
+   * Must match that list exactly, or the form opens with nothing selected.
+   */
+  quote: string;
+}
+
+export interface ProcessStep {
+  icon: IconName;
+  title: string;
+  text: string;
+}
+
+export interface Faq {
+  q: string;
+  a: string;
 }
 
 export interface WorkPhoto {

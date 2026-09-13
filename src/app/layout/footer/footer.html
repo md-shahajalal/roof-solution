@@ -5,8 +5,11 @@
       <a href="#home">
         <img src="/images/logo.png" width="500" height="392" [alt]="site.name" loading="lazy">
       </a>
-      <p class="rm-footer__note">{{ site.motto }}</p>
-      <p class="rm-footer__note">{{ site.serviceArea }}</p>
+      <p class="rm-footer__note">
+        Roof repairs, replacements and inspections from a licensed, insured team.
+        {{ site.serviceArea }}.
+      </p>
+      <p class="rm-footer__motto">&ldquo;{{ site.motto }}&rdquo;</p>
     </div>
 
     <div>
@@ -18,13 +21,16 @@
       </ul>
     </div>
 
+    <!-- No "Financing" link: there is no financing page or offer on the site, and
+         a link implying one is a promise the business may not be able to keep. -->
     <div>
       <h2 class="rm-footer__title">Company</h2>
       <ul class="rm-footer__list">
         <li><a href="#about">About us</a></li>
+        <li><a href="#process">How it works</a></li>
         <li><a href="#work">Our work</a></li>
         <li><a href="#reviews">Reviews</a></li>
-        <li><a href="#services">Financing</a></li>
+        <li><a href="#faq">FAQ</a></li>
       </ul>
     </div>
 
@@ -46,8 +52,15 @@
             <rm-icon name="pin" /> {{ site.serviceArea }}
           </span>
         </li>
-        <li>{{ site.hours }}</li>
+        <li>
+          <span class="rm-footer__contact">
+            <rm-icon name="clock" /> {{ site.hours }}
+          </span>
+        </li>
       </ul>
+      <button type="button" class="rm-btn rm-btn--primary rm-footer__cta" (click)="openEstimate($event)">
+        Get a free estimate
+      </button>
     </div>
 
   </div>
