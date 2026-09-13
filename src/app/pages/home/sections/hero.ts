@@ -56,7 +56,7 @@ interface QuickOption {
           <!-- Call only. The card beside this is already step one of the estimate,
                so an estimate button here would be the same action twice. -->
           <div class="rm-hero__actions">
-            <a class="rm-btn rm-btn--primary rm-btn--lg" [href]="telHref">
+            <a class="rm-btn rm-btn--ghost rm-btn--lg" [href]="telHref">
               <span class="rm-btn__icon"><rm-icon name="phone" /></span>
               {{ site.phone }}
             </a>

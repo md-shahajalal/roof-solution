@@ -33,9 +33,9 @@ export interface EstimateRequest {
 /**
  * Owns the estimate modal's open/closed state and posts the form.
  *
- * State lives in a root service rather than in the modal component because four
- * different "Get a free estimate" buttons — two in the header, one in the hero,
- * one in the closing band — all need to open the same single instance that is
+ * State lives in a root service rather than in the modal component because
+ * several "Get a free estimate" buttons — in the header, the hero card, the help
+ * section and the phone dock — all need to open the same single instance that is
  * mounted once in `App`. A shared signal is cheaper than routing an output
  * through every section component in between.
  *

@@ -4,9 +4,8 @@ import { FEATURES } from '../../../core/content';
 import { SITE } from '../../../core/site.config';
 
 /**
- * The page's one dark band. A long run of white sections reads as a template;
- * a deep navy break in the middle gives the page a rhythm, and puts the reasons
- * to hire R&M on the most visually weighted ground below the hero.
+ * A soft tinted band between two white sections: enough of a change of ground
+ * to give a long page some rhythm, without the eye strain of a dark block.
  */
 @Component({
   selector: 'rm-why-us',

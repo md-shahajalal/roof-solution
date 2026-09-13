@@ -32,7 +32,7 @@ import { EstimateService } from '../../../core/estimate.service';
             documentation and full restoration.
           </p>
           <div class="rm-help__actions">
-            <a class="rm-btn rm-btn--primary" [href]="telHref">
+            <a class="rm-btn rm-btn--dark" [href]="telHref">
               <span class="rm-btn__icon"><rm-icon name="phone" /></span>
               Call {{ site.phone }}
             </a>

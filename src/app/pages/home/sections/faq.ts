@@ -8,7 +8,7 @@ import { SITE, telHref } from '../../../core/site.config';
  * while collapsed. The shared `name` makes them close one another in browsers
  * that support it, and is simply ignored in the rest.
  *
- * No estimate button: the closing band directly below carries it.
+ * No estimate button: the sticky header, and the dock on phones, keep one in reach.
  */
 @Component({
   selector: 'rm-faq',
