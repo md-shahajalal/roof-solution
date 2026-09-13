@@ -11,274 +11,333 @@
       #panel
       (click)="$event.stopPropagation()">
 
-      <header class="rm-modal__head">
+      <button type="button" class="rm-modal__close" (click)="estimate.close()" aria-label="Close this form">
+        <span aria-hidden="true">&times;</span>
+      </button>
+
+      <!-- Desktop only. Answers "what happens after I send this?", which is the
+           question that stops a hesitant visitor pressing Send, and keeps the
+           phone number in view for anyone who would rather talk. Hidden on
+           phones, where the form needs the whole screen. -->
+      <aside class="rm-modal__aside" aria-label="About your free estimate">
         <div>
+          <p class="rm-modal__aside-eyebrow">Free estimate</p>
+          <p class="rm-modal__aside-title">What happens next</p>
+
+          <ol class="rm-modal__steps">
+            <li class="rm-modal__step">
+              <span class="rm-modal__step-num" aria-hidden="true">1</span>
+              <span>
+                <strong>We get back to you</strong>
+                <span class="rm-modal__step-text">Within one business day of your request.</span>
+              </span>
+            </li>
+            <li class="rm-modal__step">
+              <span class="rm-modal__step-num" aria-hidden="true">2</span>
+              <span>
+                <strong>We take a look at the roof</strong>
+                <span class="rm-modal__step-text">And explain what we find in plain language.</span>
+              </span>
+            </li>
+            <li class="rm-modal__step">
+              <span class="rm-modal__step-num" aria-hidden="true">3</span>
+              <span>
+                <strong>You get a clear price</strong>
+                <span class="rm-modal__step-text">Before any work starts. No pressure, no obligation.</span>
+              </span>
+            </li>
+          </ol>
+        </div>
+
+        <ul class="rm-modal__trust">
+          <li><rm-icon name="shield" /> {{ site.license.display }}</li>
+          <li><rm-icon name="medal" /> Licensed, bonded &amp; insured</li>
+          <li><rm-icon name="clock" /> {{ site.hours }}</li>
+        </ul>
+
+        <a class="rm-modal__callcard" [href]="telHref">
+          <span class="rm-modal__callcard-ring"><rm-icon name="phone" /></span>
+          <span>
+            <span class="rm-modal__callcard-label">Prefer to talk it through?</span>
+            <span class="rm-modal__callcard-number">{{ site.phone }}</span>
+          </span>
+        </a>
+      </aside>
+
+      <div class="rm-modal__main">
+        <header class="rm-modal__head">
           <p class="rm-modal__eyebrow">No obligation, no pressure</p>
           <h2 class="rm-h2 rm-modal__title" id="rm-estimate-title">Get a free estimate</h2>
-        </div>
-        <button type="button" class="rm-modal__close" (click)="estimate.close()" aria-label="Close this form">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </header>
-
-      @if (status() === 'sent') {
-
-        <div class="rm-modal__done">
-          <span class="rm-modal__done-mark"><rm-icon name="check" /></span>
-          <h3 class="rm-h2 rm-modal__done-title">Request received</h3>
-          <p class="rm-modal__done-text">
-            Thank you. We have your details and will get back to you within one business day.
-            If it is urgent, call us on
-            <a [href]="telHref">{{ site.phone }}</a> &mdash; the emergency line is open 24/7.
-          </p>
-          <button type="button" class="rm-btn rm-btn--primary" (click)="estimate.close()">Done</button>
-        </div>
-
-      } @else {
-
-        <p class="rm-modal__intro">
-          Tell us about the roof and we will come out and price the job. Fields marked
-          <span class="rm-req" aria-hidden="true">*</span> are required.
-        </p>
-
-        <form class="rm-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-
-          <!-- SHOWING AND HIDING FIELDS
-
-               Name and phone are always asked. Every other question has its own
-               block below. A hidden one sits inside a comment that opens on a
-               "HIDDEN FIELD: <name>" line and closes on an "END HIDDEN FIELD:
-               <name>" line.
-
-               To show a field:
-                 1. Delete its two marker lines here.
-                 2. Uncomment its control in estimate-modal.ts, marked there with
-                    the same "HIDDEN FIELD: <name>" label.
-                 3. Add it to SHOWN in estimate-modal.spec.ts.
-               To hide one, do the same in reverse.
-
-               A required field (marked *) has to be shown or hidden together with
-               its control: a required control with no visible field means the
-               form can never be submitted.
-
-               The photo picker's label deliberately has no `for` attribute; the
-               reason is on onFilesPicked in estimate-modal.ts. -->
-          <div class="rm-form__grid">
-
-            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('fullName')">
-              <label for="rm-name">Full name <span class="rm-req" aria-hidden="true">*</span></label>
-              <input id="rm-name" type="text" formControlName="fullName"
-                     autocomplete="name" placeholder="Jane Doe"
-                     [attr.aria-invalid]="invalid('fullName') || null"
-                     [attr.aria-describedby]="invalid('fullName') ? 'rm-name-err' : null">
-              @if (invalid('fullName')) {
-                <p class="rm-field__error" id="rm-name-err">{{ errorFor('fullName') }}</p>
-              }
-            </div>
-
-            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('phone')">
-              <label for="rm-phone">Phone number <span class="rm-req" aria-hidden="true">*</span></label>
-              <input id="rm-phone" type="tel" formControlName="phone"
-                     autocomplete="tel" inputmode="tel" placeholder="(707) 555-0123"
-                     [attr.aria-invalid]="invalid('phone') || null"
-                     [attr.aria-describedby]="invalid('phone') ? 'rm-phone-err' : null">
-              @if (invalid('phone')) {
-                <p class="rm-field__error" id="rm-phone-err">{{ errorFor('phone') }}</p>
-              }
-            </div>
-
-            <!-- HIDDEN FIELD: Email
-            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('email')">
-              <label for="rm-email">Email address <span class="rm-optional">(optional)</span></label>
-              <input id="rm-email" type="email" formControlName="email"
-                     autocomplete="email" inputmode="email" placeholder="you@example.com"
-                     [attr.aria-invalid]="invalid('email') || null"
-                     [attr.aria-describedby]="invalid('email') ? 'rm-email-err' : null">
-              @if (invalid('email')) {
-                <p class="rm-field__error" id="rm-email-err">{{ errorFor('email') }}</p>
-              }
-            </div>
-            END HIDDEN FIELD: Email -->
-
-            <!-- HIDDEN FIELD: City
-            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('city')">
-              <label for="rm-city">City</label>
-              <input id="rm-city" type="text" formControlName="city"
-                     autocomplete="address-level2" placeholder="Vallejo"
-                     [attr.aria-invalid]="invalid('city') || null"
-                     [attr.aria-describedby]="invalid('city') ? 'rm-city-err' : null">
-              @if (invalid('city')) {
-                <p class="rm-field__error" id="rm-city-err">{{ errorFor('city') }}</p>
-              }
-            </div>
-            END HIDDEN FIELD: City -->
-
-            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('propertyAddress')">
-              <label for="rm-address">Property address <span class="rm-optional">(optional)</span></label>
-              <input id="rm-address" type="text" formControlName="propertyAddress"
-                     autocomplete="street-address" placeholder="Street address of the property"
-                     [attr.aria-invalid]="invalid('propertyAddress') || null"
-                     [attr.aria-describedby]="invalid('propertyAddress') ? 'rm-address-err' : null">
-              @if (invalid('propertyAddress')) {
-                <p class="rm-field__error" id="rm-address-err">{{ errorFor('propertyAddress') }}</p>
-              }
-            </div>
-
-            <!-- HIDDEN FIELD: Type of property
-            <fieldset class="rm-field rm-field--wide rm-fieldset">
-              <legend>Type of property</legend>
-              <div class="rm-choices">
-                @for (type of propertyTypes; track type) {
-                  <label class="rm-choice">
-                    <input type="radio" formControlName="propertyType" [value]="type">
-                    <span class="rm-choice__box">
-                      <rm-icon [name]="type === 'Residential' ? 'house' : 'shield'" />
-                      {{ type }}
-                    </span>
-                  </label>
-                }
-              </div>
-            </fieldset>
-            END HIDDEN FIELD: Type of property -->
-
-            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('service')">
-              <label for="rm-service">
-                Roofing service needed <span class="rm-req" aria-hidden="true">*</span>
-              </label>
-              <select id="rm-service" formControlName="service"
-                      [attr.aria-invalid]="invalid('service') || null"
-                      [attr.aria-describedby]="invalid('service') ? 'rm-service-err' : null">
-                <option value="" disabled>Choose a service&hellip;</option>
-                @for (service of services; track service) {
-                  <option [value]="service">{{ service }}</option>
-                }
-              </select>
-              @if (invalid('service')) {
-                <p class="rm-field__error" id="rm-service-err">{{ errorFor('service') }}</p>
-              }
-            </div>
-
-            <!-- HIDDEN FIELD: Description
-            <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('description')">
-              <label for="rm-description">Brief description of the roofing issue or project</label>
-              <textarea id="rm-description" formControlName="description" rows="4"
-                        placeholder="Leaking over the back bedroom after last week's storm, about 12 years old, composition shingle."
-                        [attr.aria-invalid]="invalid('description') || null"
-                        [attr.aria-describedby]="invalid('description') ? 'rm-description-err' : null"></textarea>
-              @if (invalid('description')) {
-                <p class="rm-field__error" id="rm-description-err">{{ errorFor('description') }}</p>
-              }
-            </div>
-            END HIDDEN FIELD: Description -->
-
-            <!-- HIDDEN FIELD: Preferred date
-            <div class="rm-field rm-field--wide">
-              <label for="rm-date">Preferred date for inspection</label>
-              <input id="rm-date" type="date" formControlName="preferredDate" [min]="today">
-            </div>
-            END HIDDEN FIELD: Preferred date -->
-
-            <!-- HIDDEN FIELD: Preferred time
-            <div class="rm-field rm-field--wide">
-              <label for="rm-time">Preferred time</label>
-              <input id="rm-time" type="time" formControlName="preferredTime">
-            </div>
-            END HIDDEN FIELD: Preferred time -->
-
-            <div class="rm-field rm-field--wide">
-              <span class="rm-field__label">
-                Photos of the roof or damage <span class="rm-optional">(optional)</span>
-              </span>
-              <p class="rm-field__hint">
-                Helps us quote accurately. Up to {{ limits.maxFiles }} images. Large photos
-                are resized on your device before sending.
-              </p>
-
-              <label class="rm-upload"
-                     [class.rm-upload--busy]="compressing()"
-                     [class.rm-upload--drag]="dragging()"
-                     (dragenter)="onDragOver($event)"
-                     (dragover)="onDragOver($event)"
-                     (dragleave)="onDragLeave()"
-                     (drop)="onDrop($event)">
-                <rm-icon name="search" />
-                @if (compressing()) {
-                  <span>Preparing photos&hellip;</span>
-                } @else {
-                  <span><strong>Choose photos</strong> or drag them here</span>
-                }
-                <input id="rm-photos" type="file" accept="image/*" multiple
-                       [disabled]="compressing()"
-                       (change)="onFilesPicked($event)">
-              </label>
-
-              @if (photos().length) {
-                <ul class="rm-upload__list">
-                  @for (photo of photos(); track photo.key) {
-                    <li class="rm-upload__item">
-                      <span class="rm-upload__name">{{ photo.file.name }}</span>
-                      <span class="rm-upload__size">{{ size(photo.file.size) }}</span>
-                      <button type="button" class="rm-upload__remove"
-                              (click)="removePhoto(photo)"
-                              [attr.aria-label]="'Remove ' + photo.file.name">&times;</button>
-                    </li>
-                  }
-                </ul>
-                <p class="rm-field__hint">
-                  {{ photos().length }} of {{ limits.maxFiles }} &middot;
-                  {{ size(totalBytes()) }} of {{ size(limits.maxPayloadBytes) }} after resizing
-                </p>
-              }
-
-              @if (fileError()) {
-                <p class="rm-field__error">{{ fileError() }}</p>
-              }
-            </div>
-
-          </div>
-
-          @if (status() === 'error') {
-            <p class="rm-form__alert" role="alert">
-              <rm-icon name="shield" />
-              <span>{{ errorMessage() }}</span>
+          @if (status() !== 'sent') {
+            <p class="rm-modal__intro">
+              Takes about a minute. Fields marked <span class="rm-req" aria-hidden="true">*</span>
+              are required.
             </p>
           }
+        </header>
 
-          <!-- Announced to screen readers without stealing focus mid-send. -->
-          <p class="rm-screen-reader-text" role="status">
-            @if (compressing()) { Preparing your photos, please wait. }
-            @if (status() === 'sending') { Sending your request, please wait. }
-          </p>
+        @if (status() === 'sent') {
 
-          <div class="rm-form__actions">
-            <button type="submit" class="rm-btn rm-btn--primary rm-btn--lg"
-                    [disabled]="status() === 'sending' || compressing()">
-              <span class="rm-btn__icon"><rm-icon name="calendar" /></span>
-              @if (status() === 'sending') {
-                Sending&hellip;
-              } @else if (compressing()) {
-                Preparing photos&hellip;
-              } @else {
-                Send my request
-              }
-            </button>
-
-            <button type="button" class="rm-btn rm-btn--ghost rm-btn--lg" (click)="estimate.close()">
-              Cancel
-            </button>
-
-            <a class="rm-form__call" [href]="telHref">
-              <rm-icon name="phone" />
-              <span>Or call {{ site.phone }}</span>
-            </a>
+          <div class="rm-modal__done">
+            <span class="rm-modal__done-mark"><rm-icon name="check" /></span>
+            <h3 class="rm-h2 rm-modal__done-title">Request received</h3>
+            <p class="rm-modal__done-text">
+              Thank you. We have your details and will get back to you within one business day.
+              If it is urgent, call us on
+              <a [href]="telHref">{{ site.phone }}</a> &mdash; the emergency line is open 24/7.
+            </p>
+            <button type="button" class="rm-btn rm-btn--primary" (click)="estimate.close()">Done</button>
           </div>
 
-          <p class="rm-form__fineprint">
-            {{ site.license.display }} &middot; {{ site.serviceArea }} &middot; {{ site.hours }}
-          </p>
-        </form>
+        } @else {
 
-      }
+          <form class="rm-form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+            <!-- SHOWING AND HIDING FIELDS
+
+                 Name and phone are always asked. Every other question has its own
+                 block below. A hidden one sits inside a comment that opens on a
+                 "HIDDEN FIELD: <name>" line and closes on an "END HIDDEN FIELD:
+                 <name>" line.
+
+                 To show a field:
+                   1. Delete its two marker lines here.
+                   2. Uncomment its control in estimate-modal.ts, marked there with
+                      the same "HIDDEN FIELD: <name>" label.
+                   3. Add it to SHOWN in estimate-modal.spec.ts.
+                 To hide one, do the same in reverse.
+
+                 A required field (marked *) has to be shown or hidden together with
+                 its control: a required control with no visible field means the
+                 form can never be submitted.
+
+                 Name and phone sit side by side on desktop; everything else is
+                 full width (rm-field--wide).
+
+                 The photo picker's label deliberately has no `for` attribute; the
+                 reason is on onFilesPicked in estimate-modal.ts. -->
+            <div class="rm-form__grid">
+
+              <div class="rm-field" [class.rm-field--invalid]="invalid('fullName')">
+                <label for="rm-name">Full name <span class="rm-req" aria-hidden="true">*</span></label>
+                <input id="rm-name" type="text" formControlName="fullName"
+                       autocomplete="name" placeholder="Jane Doe"
+                       [attr.aria-invalid]="invalid('fullName') || null"
+                       [attr.aria-describedby]="invalid('fullName') ? 'rm-name-err' : null">
+                @if (invalid('fullName')) {
+                  <p class="rm-field__error" id="rm-name-err">{{ errorFor('fullName') }}</p>
+                }
+              </div>
+
+              <div class="rm-field" [class.rm-field--invalid]="invalid('phone')">
+                <label for="rm-phone">Phone number <span class="rm-req" aria-hidden="true">*</span></label>
+                <input id="rm-phone" type="tel" formControlName="phone"
+                       autocomplete="tel" inputmode="tel" placeholder="(707) 555-0123"
+                       [attr.aria-invalid]="invalid('phone') || null"
+                       [attr.aria-describedby]="invalid('phone') ? 'rm-phone-err' : null">
+                @if (invalid('phone')) {
+                  <p class="rm-field__error" id="rm-phone-err">{{ errorFor('phone') }}</p>
+                }
+              </div>
+
+              <!-- HIDDEN FIELD: Email
+              <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('email')">
+                <label for="rm-email">Email address <span class="rm-optional">(optional)</span></label>
+                <input id="rm-email" type="email" formControlName="email"
+                       autocomplete="email" inputmode="email" placeholder="you@example.com"
+                       [attr.aria-invalid]="invalid('email') || null"
+                       [attr.aria-describedby]="invalid('email') ? 'rm-email-err' : null">
+                @if (invalid('email')) {
+                  <p class="rm-field__error" id="rm-email-err">{{ errorFor('email') }}</p>
+                }
+              </div>
+              END HIDDEN FIELD: Email -->
+
+              <!-- HIDDEN FIELD: City
+              <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('city')">
+                <label for="rm-city">City</label>
+                <input id="rm-city" type="text" formControlName="city"
+                       autocomplete="address-level2" placeholder="Vallejo"
+                       [attr.aria-invalid]="invalid('city') || null"
+                       [attr.aria-describedby]="invalid('city') ? 'rm-city-err' : null">
+                @if (invalid('city')) {
+                  <p class="rm-field__error" id="rm-city-err">{{ errorFor('city') }}</p>
+                }
+              </div>
+              END HIDDEN FIELD: City -->
+
+              <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('propertyAddress')">
+                <label for="rm-address">Property address <span class="rm-optional">(optional)</span></label>
+                <input id="rm-address" type="text" formControlName="propertyAddress"
+                       autocomplete="street-address" placeholder="Street address of the property"
+                       [attr.aria-invalid]="invalid('propertyAddress') || null"
+                       [attr.aria-describedby]="invalid('propertyAddress') ? 'rm-address-err' : null">
+                @if (invalid('propertyAddress')) {
+                  <p class="rm-field__error" id="rm-address-err">{{ errorFor('propertyAddress') }}</p>
+                }
+              </div>
+
+              <!-- HIDDEN FIELD: Type of property
+              <fieldset class="rm-field rm-field--wide rm-fieldset">
+                <legend>Type of property</legend>
+                <div class="rm-choices">
+                  @for (type of propertyTypes; track type) {
+                    <label class="rm-choice">
+                      <input type="radio" formControlName="propertyType" [value]="type">
+                      <span class="rm-choice__box">
+                        <rm-icon [name]="type === 'Residential' ? 'house' : 'shield'" />
+                        {{ type }}
+                      </span>
+                    </label>
+                  }
+                </div>
+              </fieldset>
+              END HIDDEN FIELD: Type of property -->
+
+              <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('service')">
+                <label for="rm-service">
+                  Roofing service needed <span class="rm-req" aria-hidden="true">*</span>
+                </label>
+                <select id="rm-service" formControlName="service"
+                        [attr.aria-invalid]="invalid('service') || null"
+                        [attr.aria-describedby]="invalid('service') ? 'rm-service-err' : null">
+                  <option value="" disabled>Choose a service&hellip;</option>
+                  @for (service of services; track service) {
+                    <option [value]="service">{{ service }}</option>
+                  }
+                </select>
+                @if (invalid('service')) {
+                  <p class="rm-field__error" id="rm-service-err">{{ errorFor('service') }}</p>
+                }
+              </div>
+
+              <!-- HIDDEN FIELD: Description
+              <div class="rm-field rm-field--wide" [class.rm-field--invalid]="invalid('description')">
+                <label for="rm-description">Brief description of the roofing issue or project</label>
+                <textarea id="rm-description" formControlName="description" rows="4"
+                          placeholder="Leaking over the back bedroom after last week's storm, about 12 years old, composition shingle."
+                          [attr.aria-invalid]="invalid('description') || null"
+                          [attr.aria-describedby]="invalid('description') ? 'rm-description-err' : null"></textarea>
+                @if (invalid('description')) {
+                  <p class="rm-field__error" id="rm-description-err">{{ errorFor('description') }}</p>
+                }
+              </div>
+              END HIDDEN FIELD: Description -->
+
+              <!-- HIDDEN FIELD: Preferred date
+              <div class="rm-field rm-field--wide">
+                <label for="rm-date">Preferred date for inspection</label>
+                <input id="rm-date" type="date" formControlName="preferredDate" [min]="today">
+              </div>
+              END HIDDEN FIELD: Preferred date -->
+
+              <!-- HIDDEN FIELD: Preferred time
+              <div class="rm-field rm-field--wide">
+                <label for="rm-time">Preferred time</label>
+                <input id="rm-time" type="time" formControlName="preferredTime">
+              </div>
+              END HIDDEN FIELD: Preferred time -->
+
+              <div class="rm-field rm-field--wide">
+                <span class="rm-field__label">
+                  Photos of the roof or damage <span class="rm-optional">(optional)</span>
+                </span>
+
+                <label class="rm-upload"
+                       [class.rm-upload--busy]="compressing()"
+                       [class.rm-upload--drag]="dragging()"
+                       (dragenter)="onDragOver($event)"
+                       (dragover)="onDragOver($event)"
+                       (dragleave)="onDragLeave()"
+                       (drop)="onDrop($event)">
+                  <span class="rm-upload__icon"><rm-icon name="camera" /></span>
+                  <span class="rm-upload__text">
+                    @if (compressing()) {
+                      <span>Preparing photos&hellip;</span>
+                    } @else {
+                      <span><strong>Choose photos</strong> or drag them here</span>
+                    }
+                    <small>Helps us quote accurately &middot; up to {{ limits.maxFiles }} images, resized on your device</small>
+                  </span>
+                  <input id="rm-photos" type="file" accept="image/*" multiple
+                         [disabled]="compressing()"
+                         (change)="onFilesPicked($event)">
+                </label>
+
+                @if (photos().length) {
+                  <ul class="rm-upload__list">
+                    @for (photo of photos(); track photo.key) {
+                      <li class="rm-upload__item">
+                        <span class="rm-upload__thumb" aria-hidden="true"><rm-icon name="image" /></span>
+                        <span class="rm-upload__name">{{ photo.file.name }}</span>
+                        <span class="rm-upload__size">{{ size(photo.file.size) }}</span>
+                        <button type="button" class="rm-upload__remove"
+                                (click)="removePhoto(photo)"
+                                [attr.aria-label]="'Remove ' + photo.file.name">&times;</button>
+                      </li>
+                    }
+                  </ul>
+                  <p class="rm-field__hint">
+                    {{ photos().length }} of {{ limits.maxFiles }} &middot;
+                    {{ size(totalBytes()) }} of {{ size(limits.maxPayloadBytes) }} after resizing
+                  </p>
+                }
+
+                @if (fileError()) {
+                  <p class="rm-field__error">{{ fileError() }}</p>
+                }
+              </div>
+
+            </div>
+
+            @if (status() === 'error') {
+              <p class="rm-form__alert" role="alert">
+                <rm-icon name="shield" />
+                <span>{{ errorMessage() }}</span>
+              </p>
+            }
+
+            <!-- Announced to screen readers without stealing focus mid-send. -->
+            <p class="rm-screen-reader-text" role="status">
+              @if (compressing()) { Preparing your photos, please wait. }
+              @if (status() === 'sending') { Sending your request, please wait. }
+            </p>
+
+            <!-- Secondary on the left, primary on the right, as dialogs are read.
+                 On phones the order flips so Send is the first, full-width button. -->
+            <div class="rm-form__actions">
+              <a class="rm-form__call" [href]="telHref">
+                <rm-icon name="phone" />
+                <span>Or call {{ site.phone }}</span>
+              </a>
+
+              <button type="button" class="rm-btn rm-btn--ghost rm-form__cancel" (click)="estimate.close()">
+                Cancel
+              </button>
+
+              <button type="submit" class="rm-btn rm-btn--primary rm-form__submit"
+                      [disabled]="status() === 'sending' || compressing()">
+                @if (status() === 'sending') {
+                  Sending&hellip;
+                } @else if (compressing()) {
+                  Preparing photos&hellip;
+                } @else {
+                  Send my request
+                  <span class="rm-btn__chevron"><rm-icon name="chevron" /></span>
+                }
+              </button>
+            </div>
+
+            <!-- Phones only: the aside that carries these on desktop is hidden. -->
+            <ul class="rm-form__fineprint">
+              <li><rm-icon name="shield" /> {{ site.license.display }}</li>
+              <li><rm-icon name="check" /> Free &amp; no obligation</li>
+              <li><rm-icon name="clock" /> {{ site.hours }}</li>
+            </ul>
+          </form>
+
+        }
+      </div>
     </div>
   </div>
 }

@@ -39,13 +39,13 @@ interface QuickOption {
           </p>
 
           <h1 class="rm-h1 rm-hero__title">
-            Honest roof repair &amp; replacement, <span class="rm-accent">built to last.</span>
+            Protecting what matters <span class="rm-accent">most</span>
           </h1>
 
-          <p class="rm-hero__lede">
-            Repairs, replacements, inspections and storm damage across California, from a
-            licensed, fully insured crew. You see a clear price before any work starts.
-          </p>
+          <p class="rm-hero__lede">High-quality roofing solutions you can trust.</p>
+
+          <!-- The brand's own promise, set apart as a quotation under the promise. -->
+          <p class="rm-hero__motto">&ldquo;{{ site.motto }}&rdquo;</p>
 
           <ul class="rm-hero__proof">
             <li><rm-icon name="check" /> Free, no-pressure estimates</li>
