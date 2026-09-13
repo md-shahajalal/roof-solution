@@ -906,7 +906,64 @@ body.rm-lightbox-open { overflow: hidden; }
 
 /* -------------------------------------------------------------- reviews */
 .rm-reviews { padding-block: var(--rm-section); background: var(--rm-sand); }
-.rm-reviews__grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+
+/* A native scroll-snap strip: swiping works on phones for free, and the arrows,
+   dots and autoplay just scroll it. Cards in view: 3, then 2, then 1. */
+.rm-slider { --rm-per-view: 3; --rm-slide-gap: 24px; }
+.rm-slider__track {
+  display: flex; gap: var(--rm-slide-gap);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  /* Room for the card shadows, which the overflow would otherwise clip. */
+  padding: 8px 4px 28px; margin: -8px -4px -28px;
+  scroll-padding-inline: 4px;
+  outline: none;
+}
+.rm-slider__track::-webkit-scrollbar { display: none; }
+.rm-slider__track:focus-visible { outline: 2px solid var(--rm-red); outline-offset: -2px; border-radius: var(--rm-radius-lg); }
+.rm-slider__slide {
+  flex: 0 0 calc((100% - (var(--rm-per-view) - 1) * var(--rm-slide-gap)) / var(--rm-per-view));
+  scroll-snap-align: start;
+}
+
+.rm-slider__controls {
+  display: flex; align-items: center; justify-content: center; gap: 18px;
+  margin-top: 36px;
+}
+.rm-slider__arrow {
+  display: grid; place-items: center;
+  flex: none;
+  width: 46px; height: 46px;
+  padding: 0;
+  color: var(--rm-ink);
+  background: #fff;
+  border: 1px solid var(--rm-line); border-radius: 50%;
+  box-shadow: var(--rm-shadow-sm);
+  cursor: pointer;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+.rm-slider__arrow:hover { background: var(--rm-red); border-color: var(--rm-red); color: #fff; }
+.rm-slider__arrow rm-icon { width: 22px; height: 22px; }
+.rm-slider__arrow--prev rm-icon { transform: rotate(180deg); }
+
+.rm-slider__dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; }
+.rm-slider__dot {
+  display: grid; place-items: center;
+  width: 24px; height: 24px; padding: 0;
+  background: none; border: 0;
+  cursor: pointer;
+}
+.rm-slider__dot::before {
+  content: "";
+  width: 10px; height: 10px;
+  border-radius: 999px;
+  background: rgba(21, 24, 28, .22);
+  transition: width .25s ease, background-color .25s ease;
+}
+.rm-slider__dot:hover::before { background: rgba(21, 24, 28, .45); }
+.rm-slider__dot.is-active::before { width: 24px; background: var(--rm-red); }
 
 .rm-review {
   position: relative;
@@ -1170,7 +1227,7 @@ body.rm-lightbox-open { overflow: hidden; }
 
   .rm-process__list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .rm-help__grid { grid-template-columns: 1fr; }
-  .rm-reviews__grid { grid-template-columns: 1fr; max-width: 680px; margin-inline: auto; }
+  .rm-slider { --rm-per-view: 2; }
   .rm-footer__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
@@ -1184,6 +1241,7 @@ body.rm-lightbox-open { overflow: hidden; }
 
 @media (max-width: 720px) {
   body.rm-body { font-size: 16px; }
+  .rm-slider { --rm-per-view: 1; --rm-slide-gap: 16px; }
   :root { --rm-gutter: 18px; }
 
   .rm-hero { padding-block: 60px 108px; }

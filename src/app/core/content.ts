@@ -3,7 +3,6 @@ import type {
   Faq,
   ProcessStep,
   Service,
-  Testimonial,
   TrustItem,
   WorkPhase,
 } from './models';
@@ -181,24 +180,6 @@ export const WORK_PHASES: readonly WorkPhase[] = [
         alt: 'A completed re-roof seen across the full elevation of the building',
       },
     ],
-  },
-];
-
-export const TESTIMONIALS: readonly Testimonial[] = [
-  {
-    text: 'Excellent work. Professional, honest, and very reliable — I would recommend them to anyone.',
-    author: 'Sarah Mitchell',
-    rating: 5,
-  },
-  {
-    text: 'They did an amazing job on our roof. Fast, clean, and great quality work.',
-    author: 'Michael Turner',
-    rating: 5,
-  },
-  {
-    text: 'Best roofing company we have worked with. Very professional and trustworthy.',
-    author: 'Jessica Bennett',
-    rating: 5,
   },
 ];
 

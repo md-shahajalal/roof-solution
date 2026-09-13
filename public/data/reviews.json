@@ -1,0 +1,20 @@
+{
+  "_howToEdit": "To add a review, copy one { ... } block, paste it after the last one, and change the text. Put a comma between blocks, but not after the last one. rating is a number from 1 to 5. Save the file and reload the website; no rebuild is needed. If the reviews disappear, a comma or quote is out of place: paste the file into jsonlint.com to find it.",
+  "reviews": [
+    {
+      "text": "Excellent work. Professional, honest, and very reliable — I would recommend them to anyone.",
+      "author": "Sarah Mitchell",
+      "rating": 5
+    },
+    {
+      "text": "They did an amazing job on our roof. Fast, clean, and great quality work.",
+      "author": "Michael Turner",
+      "rating": 5
+    },
+    {
+      "text": "Best roofing company we have worked with. Very professional and trustworthy.",
+      "author": "Jessica Bennett",
+      "rating": 5
+    }
+  ]
+}
