@@ -25,6 +25,8 @@ describe('greetingFor', () => {
 describe('ContactPopupComponent', () => {
   let fixture: ComponentFixture<ContactPopupComponent>;
   let estimate: EstimateService;
+  let tawk: TawkService;
+  let iconVisible: ReturnType<typeof vi.spyOn>;
 
   // Chat forced off, so these tests do not depend on the widget in the
   // development environment file: with no widget, Contact Us must fall back
@@ -34,11 +36,12 @@ describe('ContactPopupComponent', () => {
 
   const DELAY = 50;
   const popup = () => fixture.nativeElement.querySelector('.rm-chatpop') as HTMLElement | null;
-  const launcher = () => fixture.nativeElement.querySelector('.rm-chatlaunch') as HTMLElement | null;
   const wait = async (ms: number) => {
     await new Promise((resolve) => setTimeout(resolve, ms));
     await fixture.whenStable();
   };
+  /** The last thing the card asked of tawk.to's icon. */
+  const lastIconRequest = () => iconVisible.mock.calls.at(-1)?.[0];
 
   async function create(): Promise<void> {
     await TestBed.configureTestingModule({
@@ -47,6 +50,8 @@ describe('ContactPopupComponent', () => {
     }).compileComponents();
     fixture = TestBed.createComponent(ContactPopupComponent);
     estimate = TestBed.inject(EstimateService);
+    tawk = TestBed.inject(TawkService);
+    iconVisible = vi.spyOn(tawk, 'setIconVisible');
     await fixture.whenStable();
   }
 
@@ -67,6 +72,7 @@ describe('ContactPopupComponent', () => {
 
   afterEach(() => {
     env.tawk = configured;
+    vi.restoreAllMocks();
     vi.useRealTimers();
     document.body.classList.remove('rm-modal-open');
   });
@@ -74,16 +80,12 @@ describe('ContactPopupComponent', () => {
   it('appears on its own after a moment, with the logo and a Contact Us button', async () => {
     await create();
     expect(popup()).toBeNull();
-    // Nothing floats in the corner before the card has had its chance.
-    expect(launcher()).toBeNull();
 
     await wait(DELAY * 2);
 
     expect(popup()).not.toBeNull();
     expect(popup()!.querySelector('img')?.getAttribute('src')).toBe('/images/site-icon.png');
     expect(popup()!.querySelector('.rm-chatpop__cta')?.textContent).toContain('Contact Us');
-    // Card and button swap places: never both.
-    expect(launcher()).toBeNull();
   });
 
   it('appears again every time the site is opened, not just the first', async () => {
@@ -112,39 +114,32 @@ describe('ContactPopupComponent', () => {
     expect(popup()!.querySelector('.rm-chatpop__title')?.textContent).toContain('Good morning');
   });
 
-  it('leaves a floating Text us button behind when closed', async () => {
+  it('keeps tawk.to’s chat icon hidden while the card is up, since they share a corner', async () => {
+    await shown();
+
+    expect(popup()).not.toBeNull();
+    expect(lastIconRequest()).toBe(false);
+  });
+
+  it('hands the corner to tawk.to’s chat icon when closed, with no button of its own', async () => {
     await shown();
 
     await close();
 
     expect(popup()).toBeNull();
-    expect(launcher()).not.toBeNull();
-    expect(launcher()!.textContent).toContain('Text us');
-    // Focus follows to the button that replaced the card, rather than dropping
-    // back to the top of the page.
-    expect(document.activeElement).toBe(launcher());
+    expect(lastIconRequest()).toBe(true);
+    // The old "Text us" pill is gone for good.
+    expect(fixture.nativeElement.querySelector('.rm-chatlaunch')).toBeNull();
   });
 
-  it('reopens the card from the Text us button', async () => {
-    await shown();
-    await close();
-
-    launcher()!.click();
-    await fixture.whenStable();
-
-    expect(popup()).not.toBeNull();
-    expect(launcher()).toBeNull();
-    expect(document.activeElement).toBe(popup()!.querySelector('.rm-chatpop__cta'));
-  });
-
-  it('closes on Escape too, leaving the button behind', async () => {
+  it('closes on Escape too, and shows the chat icon', async () => {
     await shown();
 
     popup()!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     await fixture.whenStable();
 
     expect(popup()).toBeNull();
-    expect(launcher()).not.toBeNull();
+    expect(lastIconRequest()).toBe(true);
   });
 
   it('opens the estimate form when the chat is not available', async () => {
@@ -157,32 +152,19 @@ describe('ContactPopupComponent', () => {
     // reached through the form instead.
     expect(popup()).toBeNull();
     expect(estimate.isOpen()).toBe(true);
-    // And the way back is there once the form closes.
-    expect(launcher()).not.toBeNull();
   });
 
-  it('skips the card when the estimate form is open, but still offers the button', async () => {
+  it('skips the card when the estimate form is open, and shows the chat icon straight away', async () => {
     await create();
     estimate.open();
     await wait(DELAY * 2);
 
     expect(popup()).toBeNull();
-    expect(launcher()).not.toBeNull();
-  });
-
-  it('steps aside for tawk.to’s bubble once the chat has been opened', async () => {
-    await shown();
-
-    // What TawkService records when the chat window opens.
-    TestBed.inject(TawkService).handedOff.set(true);
-    await close();
-
-    expect(launcher()).toBeNull();
+    expect(lastIconRequest()).toBe(true);
   });
 
   it('shows the online dot only when tawk.to says someone is there', async () => {
     await shown();
-    const tawk = TestBed.inject(TawkService);
 
     expect(popup()!.querySelector('.rm-chatpop__online')).toBeNull();
 

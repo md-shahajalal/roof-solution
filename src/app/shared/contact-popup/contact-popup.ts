@@ -2,14 +2,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  ElementRef,
   InjectionToken,
-  Injector,
   afterNextRender,
-  computed,
   inject,
   signal,
-  viewChild,
 } from '@angular/core';
 import { IconComponent } from '../icon/icon';
 import { TawkService } from '../../core/tawk.service';
@@ -17,10 +13,10 @@ import { EstimateService } from '../../core/estimate.service';
 import { SITE } from '../../core/site.config';
 
 /**
- * How long after the page opens before the pop-up slides in.
+ * How long after the page opens before the card slides in.
  *
  * Long enough that the visitor has seen what the site is before being asked
- * anything, and that the pop-up is not competing with the page's own first paint.
+ * anything, and that the card is not competing with the page's own first paint.
  */
 export const CONTACT_POPUP_DELAY = new InjectionToken<number>('CONTACT_POPUP_DELAY', {
   providedIn: 'root',
@@ -41,18 +37,14 @@ export function greetingFor(hour: number): string {
 }
 
 /**
- * The "Good morning — Contact Us" card, and the "Text us" button that brings it
- * back.
+ * The "Good morning — Contact Us" card that slides in a few seconds into every
+ * page load.
  *
- * The card slides in by itself a few seconds into every page load. Closing it
- * leaves a floating "Text us" button in the corner, which reopens it; the two
- * swap places, so only one is ever on screen. It stays out of the way of the
- * estimate form — if that is open when the timer runs out, the card is skipped
- * on that load and the button appears straight away instead.
- *
- * Once the visitor has opened the chat, the button steps aside for tawk.to's own
- * bubble, which is where the conversation and its unread replies live. See
- * `TawkService.handedOff`.
+ * It shares the bottom-right corner with tawk.to's own chat icon, so the icon is
+ * kept out of sight while the card is up and handed back the moment the card
+ * closes. After that, tawk.to's icon is the way into the chat — and the only
+ * place a reply's unread badge appears. If the estimate form is already open
+ * when the timer runs out, the card is skipped and the icon shows straight away.
  */
 @Component({
   selector: 'rm-contact-popup',
@@ -92,18 +84,11 @@ export function greetingFor(hour: number): string {
           soon as we can.
         </p>
 
-        <button #cta type="button" class="rm-btn rm-btn--primary rm-chatpop__cta" (click)="contact()">
+        <button type="button" class="rm-btn rm-btn--primary rm-chatpop__cta" (click)="contact()">
           <span class="rm-btn__icon"><rm-icon name="chat" /></span>
           Contact Us
         </button>
       </aside>
-    }
-
-    @if (launcherVisible()) {
-      <button #launcher type="button" class="rm-chatlaunch" aria-haspopup="dialog" (click)="reopen()">
-        <rm-icon name="chat" />
-        <span>Text us</span>
-      </button>
     }
   `,
 })
@@ -112,24 +97,9 @@ export class ContactPopupComponent {
   protected readonly tawk = inject(TawkService);
   private readonly estimate = inject(EstimateService);
   private readonly delay = inject(CONTACT_POPUP_DELAY);
-  private readonly injector = inject(Injector);
-
-  private readonly cta = viewChild<ElementRef<HTMLButtonElement>>('cta');
-  private readonly launcher = viewChild<ElementRef<HTMLButtonElement>>('launcher');
 
   protected readonly visible = signal(false);
   protected readonly greeting = signal(greetingFor(new Date().getHours()));
-
-  /** Set when the timer runs out, whether or not the card was shown then. */
-  private readonly started = signal(false);
-
-  /**
-   * The corner button, whenever the card is not showing — except before the
-   * card's first chance to appear, and after the chat has taken over.
-   */
-  protected readonly launcherVisible = computed(
-    () => this.started() && !this.visible() && !this.tawk.handedOff(),
-  );
 
   constructor() {
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -145,20 +115,21 @@ export class ContactPopupComponent {
    * while still having the chat ready by the time anyone could press the button.
    */
   private appear(): void {
+    const show = !this.estimate.isOpen();
+    // Set before loading, so tawk.to's icon never flashes up under the card.
+    this.tawk.setIconVisible(!show);
     this.tawk.load();
-    this.started.set(true);
-    if (this.estimate.isOpen()) return;
-    this.show();
+    if (!show) return;
+
+    // Read at the moment of showing, from the visitor's own clock, so the
+    // greeting matches their morning rather than the server's or the page's.
+    this.greeting.set(greetingFor(new Date().getHours()));
+    this.visible.set(true);
   }
 
   protected dismiss(): void {
     this.visible.set(false);
-    this.focusAfterRender(() => this.launcher());
-  }
-
-  protected reopen(): void {
-    this.show();
-    this.focusAfterRender(() => this.cta());
+    this.tawk.setIconVisible(true);
   }
 
   /**
@@ -167,22 +138,7 @@ export class ContactPopupComponent {
    */
   protected contact(): void {
     this.visible.set(false);
+    this.tawk.setIconVisible(true);
     this.tawk.open(() => this.estimate.open());
-  }
-
-  private show(): void {
-    // Read at the moment of showing, from the visitor's own clock, so the
-    // greeting matches their morning rather than the server's or the page's.
-    this.greeting.set(greetingFor(new Date().getHours()));
-    this.visible.set(true);
-  }
-
-  /**
-   * The card and the button each leave the page when the other arrives, so a
-   * keyboard user's focus would otherwise drop back to the top of the document.
-   * Moving it to whichever took its place keeps them where they were.
-   */
-  private focusAfterRender(target: () => ElementRef<HTMLElement> | undefined): void {
-    afterNextRender(() => target()?.nativeElement.focus(), { injector: this.injector });
   }
 }

@@ -1480,9 +1480,10 @@ body.rm-modal-open { overflow: hidden; }
 .rm-envbar__item strong { color: #fff; font-weight: 600; }
 
 /* -------------------------------------------------------------- contact pop-up */
-/* The "Hello, Contact Us" card that slides in once per visit. Sits below the
-   estimate modal (1000) so opening the form always covers it, and well below
-   tawk.to's own chat window, which stacks itself above everything. */
+/* The greeting card that slides in a few seconds into each page load. It
+   shares the bottom-right corner with tawk.to's chat icon, which is hidden
+   while the card is up. Sits below the estimate modal (1000) so opening the
+   form always covers it, and below tawk.to's own chat window. */
 .rm-chatpop {
   position: fixed;
   right: 20px;
@@ -1556,43 +1557,4 @@ body.rm-modal-open { overflow: hidden; }
     width: auto;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
-}
-
-/* "Text us": what the contact card leaves behind when it is closed, and how it
-   comes back. Same corner and layer as the card, since the two swap places. */
-.rm-chatlaunch {
-  position: fixed;
-  right: 20px;
-  bottom: 20px;
-  z-index: 950;
-  display: inline-flex; align-items: center; gap: 10px;
-  min-height: 48px;
-  padding: 12px 22px 12px 18px;
-  font-family: var(--rm-body);
-  font-size: 1rem; font-weight: 600;
-  color: #fff;
-  background: var(--rm-red);
-  border: 0;
-  border-radius: 999px;
-  box-shadow: 0 10px 26px rgba(216, 30, 39, .38);
-  cursor: pointer;
-  transition: transform .15s ease, box-shadow .15s ease;
-  /* `backwards`, not `both`: a held end state would override the hover lift. */
-  animation: rm-chatlaunch-in .24s ease backwards;
-}
-.rm-chatlaunch rm-icon { width: 20px; height: 20px; flex: none; }
-.rm-chatlaunch:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(216, 30, 39, .45); }
-.rm-chatlaunch:active { transform: translateY(0); }
-
-@keyframes rm-chatlaunch-in {
-  from { opacity: 0; transform: translateY(10px) scale(.95); }
-  to   { opacity: 1; transform: none; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .rm-chatlaunch { animation: none; transition: none; }
-}
-
-@media (max-width: 480px) {
-  .rm-chatlaunch { right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
 }

@@ -19,9 +19,9 @@ export const TAWK_OPEN_TIMEOUT = new InjectionToken<number>('TAWK_OPEN_TIMEOUT',
 
 /** The parts of tawk.to's documented JavaScript API this site uses. */
 interface TawkApi {
+  onBeforeLoad?: () => void;
   onLoad?: () => void;
   onStatusChange?: (status: TawkStatus) => void;
-  onChatMaximized?: () => void;
   hideWidget?: () => void;
   showWidget?: () => void;
   maximize?: () => void;
@@ -55,15 +55,15 @@ export function tawkWidgetPath(value: string): string | null {
 }
 
 /**
- * Loads tawk.to and opens its chat on request.
+ * Loads tawk.to, shows or hides its chat icon, and opens its chat on request.
  *
  * tawk.to delivers messages to its own inbox and phone app, which pushes a
  * notification the moment one arrives. It does not send them to a phone number;
  * that would take a separate SMS service bolted on through Make or Zapier.
  *
  * Every way the chat can be unavailable — not configured, blocked, or too slow —
- * ends in the same place: the caller's fallback runs. A "Contact Us" button that
- * silently does nothing is the one outcome that must not happen.
+ * ends in the same place for "Contact Us": the caller's fallback runs. A button
+ * that silently does nothing is the one outcome that must not happen.
  */
 @Injectable({ providedIn: 'root' })
 export class TawkService {
@@ -72,21 +72,17 @@ export class TawkService {
 
   readonly state = signal<TawkState>(this.path ? 'idle' : 'off');
 
-  /** `null` until tawk.to has said. Drives the pop-up's "online" dot. */
+  /** `null` until tawk.to has said. Drives the greeting card's "online" dot. */
   readonly status = signal<TawkStatus | null>(null);
 
   /**
-   * True once the chat window has opened on this page.
+   * Whether tawk.to's chat icon should be on screen.
    *
-   * Until then tawk.to's own bubble stays hidden, so the site's "Text us" button
-   * is the only thing floating in the corner. Afterwards the conversation lives
-   * in tawk.to's bubble — and only that bubble carries its unread badge and reply
-   * previews, which is how a visitor who minimised the chat finds out the
-   * business answered. So it becomes the way back in, and "Text us" steps aside.
-   * tawk.to documents no callback for unread replies, so there is no way to put
-   * that badge on the site's own button instead.
+   * It is the site's way back into the chat, so it is on by default. The greeting
+   * card switches it off while the card is showing, because both sit in the
+   * bottom-right corner and would overlap.
    */
-  readonly handedOff = signal(false);
+  private iconWanted = true;
 
   /** A "Contact Us" press waiting for the script, and what to do if it never comes. */
   private pending: (() => void) | null = null;
@@ -115,20 +111,25 @@ export class TawkService {
     const api: TawkApi = (window.Tawk_API = window.Tawk_API ?? {});
     window.Tawk_LoadStart = new Date();
 
+    // Hide before tawk.to draws anything. tawk.to renders its widget visible
+    // first and only calls onLoad afterwards, so hiding there alone left the
+    // icon on screen under the greeting card for about two seconds (measured in
+    // a real browser). onBeforeLoad runs once the API exists but before render.
+    api.onBeforeLoad = () => {
+      if (!this.iconWanted) api.hideWidget?.();
+    };
+
     api.onLoad = () => {
       this.state.set('ready');
       this.status.set(api.getStatus?.() ?? null);
       if (this.pending) {
         this.settle();
         this.reveal();
-      } else if (!this.handedOff()) {
-        api.hideWidget?.();
+      } else {
+        this.applyIcon();
       }
     };
     api.onStatusChange = (status) => this.status.set(status);
-    // Also covers tawk.to opening itself, from a trigger set up in its dashboard:
-    // that is a conversation starting too, and the hand-off should follow it.
-    api.onChatMaximized = () => this.handedOff.set(true);
 
     const script = document.createElement('script');
     script.async = true;
@@ -140,6 +141,15 @@ export class TawkService {
       this.giveUp();
     };
     document.body.append(script);
+  }
+
+  /**
+   * Shows or hides tawk.to's chat icon. Before the script has arrived this just
+   * records the choice, and it is applied the moment tawk.to loads.
+   */
+  setIconVisible(visible: boolean): void {
+    this.iconWanted = visible;
+    if (this.state() === 'ready') this.applyIcon();
   }
 
   /**
@@ -165,8 +175,13 @@ export class TawkService {
     this.load();
   }
 
+  private applyIcon(): void {
+    if (this.iconWanted) window.Tawk_API?.showWidget?.();
+    else window.Tawk_API?.hideWidget?.();
+  }
+
   private reveal(): void {
-    this.handedOff.set(true);
+    this.iconWanted = true;
     window.Tawk_API?.showWidget?.();
     window.Tawk_API?.maximize?.();
   }

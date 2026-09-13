@@ -110,23 +110,61 @@ describe('TawkService', () => {
     expect(tawk.state()).toBe('loading');
   });
 
-  it('keeps its own bubble hidden until the chat has been opened', () => {
+  it('shows its chat icon once loaded, since it is the way into the chat', () => {
     const tawk = service(PATH);
 
     tawk.load();
     const api = arrive();
 
-    // One floating button at a time: until there is a conversation, the site's
-    // "Text us" button is the way in, not tawk.to's bubble.
+    expect(api.showWidget).toHaveBeenCalled();
+    expect(api.hideWidget).not.toHaveBeenCalled();
+  });
+
+  it('keeps the icon hidden while asked to, and shows it when asked', () => {
+    const tawk = service(PATH);
+
+    // The greeting card is on screen in the same corner.
+    tawk.setIconVisible(false);
+    tawk.load();
+    const api = arrive();
+
     expect(api.hideWidget).toHaveBeenCalled();
     expect(api.showWidget).not.toHaveBeenCalled();
-    expect(tawk.handedOff()).toBe(false);
+
+    // The card has closed.
+    tawk.setIconVisible(true);
+    expect(api.showWidget).toHaveBeenCalled();
+  });
+
+  it('hides the icon before tawk.to draws it, so it never flashes up under the card', () => {
+    const tawk = service(PATH);
+    tawk.setIconVisible(false);
+    tawk.load();
+
+    // What tawk.to has ready just before it renders: the API, not yet the widget.
+    const api = window.Tawk_API!;
+    api.hideWidget = vi.fn();
+    api.onBeforeLoad!();
+
+    expect(api.hideWidget).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves the icon alone before render when it is wanted', () => {
+    const tawk = service(PATH);
+    tawk.load();
+
+    const api = window.Tawk_API!;
+    api.hideWidget = vi.fn();
+    api.onBeforeLoad!();
+
+    expect(api.hideWidget).not.toHaveBeenCalled();
   });
 
   it('opens the chat the moment it arrives when Contact Us was pressed first', () => {
     const tawk = service(PATH);
     const fallback = vi.fn();
 
+    tawk.setIconVisible(false);
     tawk.open(fallback);
     const api = arrive('online');
 
@@ -136,18 +174,6 @@ describe('TawkService', () => {
     expect(fallback).not.toHaveBeenCalled();
     expect(tawk.state()).toBe('ready');
     expect(tawk.status()).toBe('online');
-    // From here on tawk.to's bubble, with its unread badge, is the way back in.
-    expect(tawk.handedOff()).toBe(true);
-  });
-
-  it('counts a chat that tawk.to opened by itself as a hand-off', () => {
-    const tawk = service(PATH);
-
-    tawk.load();
-    const api = arrive();
-    api.onChatMaximized!();
-
-    expect(tawk.handedOff()).toBe(true);
   });
 
   it('falls back when tawk.to is blocked, then and on every later press', () => {
@@ -159,7 +185,6 @@ describe('TawkService', () => {
 
     expect(first).toHaveBeenCalledTimes(1);
     expect(tawk.state()).toBe('failed');
-    expect(tawk.handedOff()).toBe(false);
 
     const second = vi.fn();
     tawk.open(second);
@@ -175,10 +200,10 @@ describe('TawkService', () => {
     expect(fallback).toHaveBeenCalledTimes(1);
 
     // The script turning up after the visitor has moved on must not spring the
-    // chat open over whatever they are doing now.
+    // chat open over whatever they are doing now. The icon may appear; the
+    // window must not.
     const api = arrive();
     expect(api.maximize).not.toHaveBeenCalled();
-    expect(api.hideWidget).toHaveBeenCalled();
     expect(fallback).toHaveBeenCalledTimes(1);
   });
 });
