@@ -1,93 +1,72 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, describe, expect, it } from 'vitest';
-import { WORK_PAGE_SIZE, WorkComponent, parseWorkPhases } from './work';
+import { WORK_TILES, WorkComponent, parseWorkPhotos } from './work';
 
-/** A stage with `count` photos, shaped the way public/data/work.json writes them. */
-const stage = (title: string, count: number) => ({
-  title,
-  photos: Array.from({ length: count }, (_, i) => ({
-    image: `/images/work/${i}.jpg`,
-    caption: `Caption ${i}`,
-    alt: `Photo ${i}`,
-  })),
-});
+/** `count` photos, shaped the way public/data/work.json writes them. */
+const photos = (count: number, from = 0) =>
+  Array.from({ length: count }, (_, n) => {
+    const i = from + n;
+    return { image: `/images/work/${i}.jpg`, caption: `Caption ${i}`, alt: `Photo ${i}` };
+  });
 
 /**
  * work.json is edited by hand in cPanel, so the parser is what stands between a
  * stray typo and a gallery that silently disappears.
  */
-describe('parseWorkPhases', () => {
-  it('reads stages in the shape work.json uses', () => {
-    const phases = parseWorkPhases({
-      _howToEdit: 'ignored',
-      phases: [stage('Tear-off and new decking', 5), stage('Finished roof', 8)],
-    });
+describe('parseWorkPhotos', () => {
+  it('reads photos in the shape work.json uses', () => {
+    const parsed = parseWorkPhotos({ _howToEdit: 'ignored', photos: photos(3) });
 
-    expect(phases.map((phase) => phase.title)).toEqual(['Tear-off and new decking', 'Finished roof']);
-    expect(phases.map((phase) => phase.photos.length)).toEqual([5, 8]);
-    expect(phases[0].photos[0]).toEqual({ image: '/images/work/0.jpg', caption: 'Caption 0', alt: 'Photo 0' });
+    expect(parsed).toHaveLength(3);
+    expect(parsed[0]).toEqual({ image: '/images/work/0.jpg', caption: 'Caption 0', alt: 'Photo 0' });
   });
 
-  it('picks a column count that makes the rows come out even', () => {
-    const columns = (count: number) => parseWorkPhases([stage('Stage', count)])[0].columns;
-    expect(columns(5)).toBe(5);
-    expect(columns(8)).toBe(4);
-    expect(columns(6)).toBe(3);
-    expect(columns(7)).toBe(4);
-    expect(columns(10)).toBe(5);
+  it('accepts a bare array as well as { "photos": [...] }', () => {
+    expect(parseWorkPhotos(photos(2))).toEqual(parseWorkPhotos({ photos: photos(2) }));
   });
 
-  it('uses 4 columns for any tab long enough to page, however many photos', () => {
-    const columns = (count: number) => parseWorkPhases([stage('Stage', count)])[0].columns;
-    expect(columns(WORK_PAGE_SIZE + 1)).toBe(4);
-    expect(columns(25)).toBe(4);
-    expect(columns(500)).toBe(4);
-  });
-
-  it('accepts a bare array as well as { "phases": [...] }', () => {
-    const phases = [stage('Stage', 2)];
-    expect(parseWorkPhases(phases)).toEqual(parseWorkPhases({ phases }));
-    expect(parseWorkPhases(phases)).toHaveLength(1);
-  });
-
-  it('skips a photo with no image, and drops a stage left empty', () => {
-    const phases = parseWorkPhases({
+  it('still loads a file saved in the old tabbed shape, groups run together in order', () => {
+    const parsed = parseWorkPhotos({
       phases: [
-        { title: 'Kept', photos: [{ image: '/a.jpg' }, { caption: 'no image' }] },
-        { title: 'Dropped', photos: [{ caption: 'no image either' }] },
-        { title: '', photos: [{ image: '/b.jpg' }] },
+        { title: 'Tear-off and new decking', photos: photos(5) },
+        { title: 'Finished roof', photos: photos(8, 5) },
       ],
     });
 
-    expect(phases.map((phase) => phase.title)).toEqual(['Kept']);
-    expect(phases[0].photos).toHaveLength(1);
+    expect(parsed.map((photo) => photo.image)).toEqual(photos(13).map((photo) => photo.image));
+  });
+
+  it('skips a photo with no image', () => {
+    const parsed = parseWorkPhotos({ photos: [{ image: '/a.jpg' }, { caption: 'no image' }, { image: '  ' }] });
+    expect(parsed.map((photo) => photo.image)).toEqual(['/a.jpg']);
   });
 
   it('falls back to the caption for alt text when alt is missing', () => {
-    const [phase] = parseWorkPhases([{ title: 'Stage', photos: [{ image: '/a.jpg', caption: 'Ridge vent' }] }]);
-    expect(phase.photos[0]).toEqual({ image: '/a.jpg', caption: 'Ridge vent', alt: 'Ridge vent' });
+    const [photo] = parseWorkPhotos([{ image: '/a.jpg', caption: 'Ridge vent' }]);
+    expect(photo).toEqual({ image: '/a.jpg', caption: 'Ridge vent', alt: 'Ridge vent' });
   });
 
   it('returns nothing for JSON of the wrong shape instead of throwing', () => {
-    expect(parseWorkPhases(null)).toEqual([]);
-    expect(parseWorkPhases({ reviews: [] })).toEqual([]);
-    expect(parseWorkPhases('not json')).toEqual([]);
+    expect(parseWorkPhotos(null)).toEqual([]);
+    expect(parseWorkPhotos({ reviews: [] })).toEqual([]);
+    expect(parseWorkPhotos('not json')).toEqual([]);
   });
 });
 
 /**
- * A long work.json must not turn the section into most of the page: photos
- * arrive in batches, and the full list is one button press at a time away.
+ * Every photo sits on the page at once, up to a grid that ends flush; the rest
+ * are in the viewer, never behind a tab or a button that grows the page.
  */
-describe('WorkComponent with a long photo list', () => {
+describe('WorkComponent gallery', () => {
   const nativeFetch = globalThis.fetch;
   afterEach(() => {
     globalThis.fetch = nativeFetch;
+    document.body.classList.remove('rm-lightbox-open');
   });
 
-  async function render(...stages: ReturnType<typeof stage>[]): Promise<ComponentFixture<WorkComponent>> {
-    globalThis.fetch = (async () => ({ ok: true, json: async () => ({ phases: stages }) })) as unknown as typeof fetch;
+  async function render(count: number): Promise<ComponentFixture<WorkComponent>> {
+    globalThis.fetch = (async () => ({ ok: true, json: async () => ({ photos: photos(count) }) })) as unknown as typeof fetch;
 
     await TestBed.configureTestingModule({
       imports: [WorkComponent],
@@ -101,54 +80,43 @@ describe('WorkComponent with a long photo list', () => {
     return fixture;
   }
 
+  const el = (fixture: ComponentFixture<WorkComponent>) => fixture.nativeElement as HTMLElement;
   const tiles = (fixture: ComponentFixture<WorkComponent>) =>
-    fixture.nativeElement.querySelectorAll('.rm-work__item').length;
-  const moreButton = (fixture: ComponentFixture<WorkComponent>) =>
-    fixture.nativeElement.querySelector('.rm-work__more .rm-btn') as HTMLButtonElement | null;
+    el(fixture).querySelectorAll<HTMLButtonElement>('.rm-work__item');
 
-  async function press(fixture: ComponentFixture<WorkComponent>): Promise<void> {
-    moreButton(fixture)!.click();
-    await fixture.whenStable();
-  }
+  it('shows every photo with no tabs, the first one leading', async () => {
+    const fixture = await render(WORK_TILES);
 
-  it('shows one batch, adds a batch per press, then collapses back', async () => {
-    const fixture = await render(stage('Big job', 30));
-
-    expect(tiles(fixture)).toBe(12);
-    expect(moreButton(fixture)?.textContent).toContain('Show 12 more photos');
-    expect(fixture.nativeElement.querySelector('.rm-work__count')?.textContent).toContain('Showing 12 of 30');
-
-    await press(fixture);
-    expect(tiles(fixture)).toBe(24);
-    // The last batch is only as big as what is left.
-    expect(moreButton(fixture)?.textContent).toContain('Show 6 more photos');
-
-    await press(fixture);
-    expect(tiles(fixture)).toBe(30);
-    expect(moreButton(fixture)?.textContent).toContain('Show fewer photos');
-
-    await press(fixture);
-    expect(tiles(fixture)).toBe(12);
+    expect(tiles(fixture)).toHaveLength(WORK_TILES);
+    expect(el(fixture).querySelector('[role="tab"]')).toBeNull();
+    expect(el(fixture).querySelector('.rm-work__grid')?.classList).toContain('has-feature');
+    expect(el(fixture).querySelector('.rm-work__rest:not(.rm-work__rest--tablet)')).toBeNull();
   });
 
-  it('shows every photo, and no button, when a tab fits in one batch', async () => {
-    const fixture = await render(stage('Small job', 10));
+  it('caps the grid and counts the rest on the last tile', async () => {
+    const fixture = await render(20);
 
-    expect(tiles(fixture)).toBe(10);
-    expect(moreButton(fixture)).toBeNull();
+    expect(tiles(fixture)).toHaveLength(WORK_TILES);
+    expect(el(fixture).querySelector('.rm-work__rest:not(.rm-work__rest--tablet)')?.textContent).toContain('+7');
+    expect(el(fixture).querySelector('.rm-work__rest--tablet')?.textContent).toContain('+8');
   });
 
-  it('starts each tab on its first batch, whatever was expanded before', async () => {
-    const fixture = await render(stage('First', 30), stage('Second', 40));
+  it('skips the lead tile for a handful of photos', async () => {
+    const fixture = await render(3);
 
-    await press(fixture);
-    expect(tiles(fixture)).toBe(24);
+    expect(tiles(fixture)).toHaveLength(3);
+    expect(el(fixture).querySelector('.rm-work__grid')?.classList).not.toContain('has-feature');
+  });
 
-    const tabs = fixture.nativeElement.querySelectorAll('[role="tab"]');
-    (tabs[1] as HTMLButtonElement).click();
+  it('lets the viewer step past the grid into the rest', async () => {
+    const fixture = await render(20);
+
+    tiles(fixture)[WORK_TILES - 1].click();
     await fixture.whenStable();
+    expect(el(fixture).querySelector('.rm-lightbox__count')?.textContent).toContain('13 / 20');
 
-    expect(tiles(fixture)).toBe(12);
-    expect(fixture.nativeElement.querySelector('.rm-work__count')?.textContent).toContain('Showing 12 of 40');
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    await fixture.whenStable();
+    expect(el(fixture).querySelector('.rm-lightbox__count')?.textContent).toContain('14 / 20');
   });
 });

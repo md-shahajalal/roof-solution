@@ -51,16 +51,6 @@ export interface WorkPhoto {
   alt: string;
 }
 
-export interface WorkPhase {
-  title: string;
-  /**
-   * Presentational: how many tiles per row on desktop, so rows come out even.
-   * Worked out from the photo count when work.json is read, not stored in it.
-   */
-  columns: number;
-  photos: readonly WorkPhoto[];
-}
-
 export interface Testimonial {
   text: string;
   author: string;

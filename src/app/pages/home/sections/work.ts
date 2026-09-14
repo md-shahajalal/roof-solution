@@ -13,7 +13,7 @@ import {
 } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
 import { TawkService } from '../../../core/tawk.service';
-import type { WorkPhase, WorkPhoto } from '../../../core/models';
+import type { WorkPhoto } from '../../../core/models';
 
 /**
  * Where the job photos live. Like reviews.json, the file sits in public/, so the
@@ -22,10 +22,6 @@ import type { WorkPhase, WorkPhoto } from '../../../core/models';
  * public_html/data/work.json in cPanel, and the next page load shows it, with no
  * rebuild.
  *
- * The photos are grouped by the stage of work each shot documents. The grouping
- * is the point: the decking photos show work a homeowner never sees once the
- * shingles go on, which is exactly where a cheap contractor cuts corners.
- *
  * TODO(client): confirm the captions, and add the city — "Re-roof in <city>"
  * ranks and converts far better than "Finished roof" for a local services
  * business.
@@ -33,21 +29,24 @@ import type { WorkPhase, WorkPhoto } from '../../../core/models';
 const WORK_URL = 'data/work.json';
 
 /**
- * Photos shown per tab before "Show more", and how many each press adds.
- *
- * The file can grow to hundreds of photos, and rendering them all at once would
- * turn one section into most of the page. 12 fills whole rows at every grid
- * width the stylesheet uses (4, 3 and 2 columns), so each batch ends flush.
+ * Tiles in the gallery. The first photo leads at twice the size and takes four
+ * cells, so 13 photos fill exactly four rows of four on desktop and, with the
+ * lead photo full width, six rows of two on a phone. Anything past that is one
+ * tap away in the viewer, behind a "+N more" on the last tile, so the section
+ * never grows into most of the page however long work.json gets.
  */
-export const WORK_PAGE_SIZE = 12;
+export const WORK_TILES = 13;
+
+/** Below this many photos a lead tile leaves more gaps than it fills. */
+export const WORK_FEATURE_MIN = 5;
 
 /**
- * Job photos, one stage of work at a time, with a viewer for a closer look.
+ * Job photos as one showcase gallery, with a viewer for a closer look.
  *
- * Tabs instead of every photo stacked: thirteen near-identical shots of grey
- * shingles made the page long without telling a visitor anything more. The
- * viewer matters because these are phone photos of detail work — a flashed vent
- * or a re-sheeted deck only reads at full size.
+ * Every photo is on the page at once: a visitor judging a contractor scrolls,
+ * they do not click through tabs to find the work. The viewer matters because
+ * these are phone photos of detail work — a flashed vent or a re-sheeted deck
+ * only reads at full size.
  */
 @Component({
   selector: 'rm-work',
@@ -61,34 +60,13 @@ export const WORK_PAGE_SIZE = 12;
           <p class="rm-eyebrow">Our work</p>
           <h2 class="rm-h2">Real roofs, photographed on the job</h2>
           <p class="rm-section-sub">
-            Including the decking and prep work that is hidden once the shingles go on.
+            From new decking to the finished ridge, including the prep work that is hidden once the shingles go on.
           </p>
         </div>
 
-        @if (current(); as phase) {
-          <!-- One stage needs no tabs; the photos speak for themselves. -->
-          @if (phases().length > 1) {
-            <div class="rm-tabs" role="tablist" aria-label="Stage of work">
-              @for (item of phases(); track $index; let i = $index) {
-                <button type="button" role="tab" class="rm-tabs__tab"
-                        [id]="'rm-work-tab-' + i"
-                        [attr.aria-selected]="i === tab()"
-                        aria-controls="rm-work-panel"
-                        [attr.tabindex]="i === tab() ? 0 : -1"
-                        (click)="selectTab(i)"
-                        (keydown)="onTabKey($event, i)">
-                  {{ item.title }}
-                  <span class="rm-tabs__count">{{ item.photos.length }}</span>
-                </button>
-              }
-            </div>
-          }
-
-          <div class="rm-work__grid" id="rm-work-panel"
-               [attr.role]="phases().length > 1 ? 'tabpanel' : null"
-               [attr.aria-labelledby]="phases().length > 1 ? 'rm-work-tab-' + tab() : null"
-               [style.--rm-cols]="phase.columns">
-            @for (photo of visiblePhotos(); track $index; let i = $index) {
+        @if (photos().length) {
+          <div class="rm-work__grid" [class.has-feature]="featured()">
+            @for (photo of tiles(); track $index; let i = $index) {
               <button type="button" class="rm-work__item" (click)="openPhoto(i, $event)"
                       [attr.aria-label]="'View larger: ' + (photo.caption || photo.alt)">
                 <img [src]="photo.image" [alt]="photo.alt" width="640" height="853"
@@ -97,85 +75,70 @@ export const WORK_PAGE_SIZE = 12;
                   <span class="rm-work__caption">{{ photo.caption }}</span>
                 }
                 <span class="rm-work__zoom" aria-hidden="true"><rm-icon name="search" /></span>
+
+                <!-- The last tile says how much more the viewer holds. A tablet's
+                     three columns fit one tile fewer, so it counts from the 12th. -->
+                @if (i === tileCount - 1 && photos().length > tileCount) {
+                  <span class="rm-work__rest" aria-hidden="true">
+                    +{{ photos().length - tileCount }}<small>more photos</small>
+                  </span>
+                }
+                @if (featured() && i === tileCount - 2 && photos().length > tileCount - 1) {
+                  <span class="rm-work__rest rm-work__rest--tablet" aria-hidden="true">
+                    +{{ photos().length - tileCount + 1 }}<small>more photos</small>
+                  </span>
+                }
               </button>
             }
           </div>
-
-          <!-- One button that changes its label, rather than two that swap, so
-               keyboard focus is never dropped when the last batch appears. -->
-          @if (phase.photos.length > pageSize) {
-            <div class="rm-work__more">
-              <p class="rm-work__count" aria-live="polite">
-                Showing {{ visiblePhotos().length }} of {{ phase.photos.length }} photos
-              </p>
-              <button type="button" class="rm-btn rm-btn--ghost"
-                      [attr.aria-controls]="'rm-work-panel'"
-                      (click)="remaining() ? showMore() : showFewer()">
-                @if (remaining()) {
-                  Show {{ nextBatch() }} more {{ nextBatch() === 1 ? 'photo' : 'photos' }}
-                } @else {
-                  Show fewer photos
-                }
-                <span class="rm-btn__chevron rm-work__more-icon" [class.is-up]="!remaining()">
-                  <rm-icon name="chevron" />
-                </span>
-              </button>
-            </div>
-          }
         }
 
       </div>
 
       @if (viewing(); as photo) {
         <div class="rm-lightbox" role="dialog" aria-modal="true"
-             [attr.aria-label]="photo.caption || photo.alt" (click)="closePhoto()">
+             [attr.aria-label]="photo.caption || photo.alt" (click)="closePhoto()"
+             (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
           <figure class="rm-lightbox__figure" (click)="$event.stopPropagation()">
             <img [src]="photo.image" [alt]="photo.alt" width="640" height="853">
             <figcaption>
               <span>{{ photo.caption }}</span>
-              <span class="rm-lightbox__count">{{ (index() ?? 0) + 1 }} / {{ current()?.photos?.length }}</span>
+              <span class="rm-lightbox__count">{{ (index() ?? 0) + 1 }} / {{ photos().length }}</span>
             </figcaption>
           </figure>
 
           <button #closeButton type="button" class="rm-lightbox__close"
                   (click)="closePhoto()" aria-label="Close">&times;</button>
-          <button type="button" class="rm-lightbox__nav rm-lightbox__nav--prev"
-                  (click)="step(-1); $event.stopPropagation()" aria-label="Previous photo">
-            <rm-icon name="chevron" />
-          </button>
-          <button type="button" class="rm-lightbox__nav rm-lightbox__nav--next"
-                  (click)="step(1); $event.stopPropagation()" aria-label="Next photo">
-            <rm-icon name="chevron" />
-          </button>
+          @if (photos().length > 1) {
+            <button type="button" class="rm-lightbox__nav rm-lightbox__nav--prev"
+                    (click)="step(-1); $event.stopPropagation()" aria-label="Previous photo">
+              <rm-icon name="chevron" />
+            </button>
+            <button type="button" class="rm-lightbox__nav rm-lightbox__nav--next"
+                    (click)="step(1); $event.stopPropagation()" aria-label="Next photo">
+              <rm-icon name="chevron" />
+            </button>
+          }
         </div>
       }
     </section>
   `,
 })
 export class WorkComponent {
-  protected readonly pageSize = WORK_PAGE_SIZE;
-  protected readonly phases = signal<readonly WorkPhase[]>([]);
-
-  protected readonly tab = signal(0);
-  protected readonly current = computed<WorkPhase | undefined>(() => this.phases()[this.tab()]);
-
-  /** How many of the current tab's photos are on the page. */
-  protected readonly shown = signal(WORK_PAGE_SIZE);
-  protected readonly visiblePhotos = computed(() => this.current()?.photos.slice(0, this.shown()) ?? []);
-  protected readonly remaining = computed(
-    () => (this.current()?.photos.length ?? 0) - this.visiblePhotos().length,
-  );
-  protected readonly nextBatch = computed(() => Math.min(WORK_PAGE_SIZE, this.remaining()));
+  protected readonly tileCount = WORK_TILES;
+  protected readonly photos = signal<readonly WorkPhoto[]>([]);
+  protected readonly tiles = computed(() => this.photos().slice(0, WORK_TILES));
+  protected readonly featured = computed(() => this.photos().length >= WORK_FEATURE_MIN);
 
   /**
    * Index of the photo open in the viewer, or null while it is closed. It
-   * indexes the whole tab, not just the photos on the page, so the viewer can
-   * step through every photo without the visitor pressing "Show more" first.
+   * indexes every photo, not just the tiles, so the viewer steps on past the
+   * grid into the rest.
    */
   protected readonly index = signal<number | null>(null);
   protected readonly viewing = computed(() => {
     const i = this.index();
-    return i === null ? null : (this.current()?.photos[i] ?? null);
+    return i === null ? null : (this.photos()[i] ?? null);
   });
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -183,6 +146,7 @@ export class WorkComponent {
   private readonly tawk = inject(TawkService);
   private readonly closeButton = viewChild<ElementRef<HTMLButtonElement>>('closeButton');
   private returnFocus: HTMLElement | null = null;
+  private touchStartX: number | null = null;
 
   constructor() {
     inject(DestroyRef).onDestroy(() => {
@@ -190,61 +154,6 @@ export class WorkComponent {
       this.tawk.setCovered('lightbox', false);
     });
     void this.load();
-  }
-
-  /** Every tab opens on its first batch, whatever was expanded on the last one. */
-  protected selectTab(i: number): void {
-    this.tab.set(i);
-    this.shown.set(WORK_PAGE_SIZE);
-  }
-
-  /** Arrow keys, Home and End move between tabs, as the ARIA tabs pattern expects. */
-  protected onTabKey(event: KeyboardEvent, i: number): void {
-    const count = this.phases().length;
-    const next =
-      event.key === 'ArrowRight' ? (i + 1) % count
-      : event.key === 'ArrowLeft' ? (i - 1 + count) % count
-      : event.key === 'Home' ? 0
-      : event.key === 'End' ? count - 1
-      : null;
-    if (next === null) return;
-
-    event.preventDefault();
-    this.selectTab(next);
-    afterNextRender(
-      () => this.host.nativeElement.querySelectorAll<HTMLElement>('[role="tab"]')[next]?.focus(),
-      { injector: this.injector },
-    );
-  }
-
-  /**
-   * Reveals the next batch and moves focus to the first new photo, so a keyboard
-   * or screen-reader user lands on what just appeared instead of back at the top.
-   */
-  protected showMore(): void {
-    const firstNew = this.visiblePhotos().length;
-    this.shown.update((count) => count + WORK_PAGE_SIZE);
-    afterNextRender(
-      () => this.host.nativeElement.querySelectorAll<HTMLElement>('.rm-work__item')[firstNew]?.focus(),
-      { injector: this.injector },
-    );
-  }
-
-  /**
-   * Back to the first batch. The page just got much shorter above the visitor, so
-   * bring the section back into view rather than leaving them in the reviews.
-   */
-  protected showFewer(): void {
-    this.shown.set(WORK_PAGE_SIZE);
-    afterNextRender(
-      () => {
-        const section = this.host.nativeElement.querySelector<HTMLElement>('#work');
-        if (!section || section.getBoundingClientRect().top >= 0) return;
-        const reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
-        section.scrollIntoView?.({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
-      },
-      { injector: this.injector },
-    );
   }
 
   protected openPhoto(i: number, event: Event): void {
@@ -268,9 +177,22 @@ export class WorkComponent {
 
   protected step(delta: number): void {
     const i = this.index();
-    const count = this.current()?.photos.length ?? 0;
+    const count = this.photos().length;
     if (i === null || !count) return;
     this.index.set((i + delta + count) % count);
+  }
+
+  /** On a phone, a sideways swipe moves between photos, as every photo app does. */
+  protected onTouchStart(event: TouchEvent): void {
+    this.touchStartX = event.changedTouches[0]?.clientX ?? null;
+  }
+
+  protected onTouchEnd(event: TouchEvent): void {
+    const start = this.touchStartX;
+    this.touchStartX = null;
+    const end = event.changedTouches[0]?.clientX;
+    if (start === null || end === undefined || Math.abs(end - start) < 50) return;
+    this.step(end < start ? 1 : -1);
   }
 
   @HostListener('document:keydown', ['$event'])
@@ -289,13 +211,13 @@ export class WorkComponent {
       // cPanel shows up straight away rather than when the browser cache expires.
       const response = await fetch(new URL(WORK_URL, document.baseURI), { cache: 'no-cache' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      this.phases.set(parseWorkPhases(await response.json()));
+      this.photos.set(parseWorkPhotos(await response.json()));
     } catch (error) {
       console.error(`Could not load work photos from ${WORK_URL}. Is the JSON valid?`, error);
     }
   }
 
-  /** Keeps Tab cycling through the viewer's three buttons while it is open. */
+  /** Keeps Tab cycling through the viewer's buttons while it is open. */
   private trapFocus(event: KeyboardEvent): void {
     const buttons = Array.from(
       this.host.nativeElement.querySelectorAll<HTMLElement>('.rm-lightbox button'),
@@ -311,21 +233,22 @@ export class WorkComponent {
 }
 
 /**
- * The JSON is edited by hand, so accept either `{ "phases": [...] }` or a bare
- * array. A photo without an image path is skipped rather than shown broken, and
- * a stage left with no photos is dropped, so one bad block never takes the whole
- * gallery down.
+ * The JSON is edited by hand, so accept either `{ "photos": [...] }` or a bare
+ * array. A photo without an image path is skipped rather than shown broken, so
+ * one bad block never takes the whole gallery down.
+ *
+ * The file used to group photos into tabs (`{ "phases": [{ "photos": [...] }] }`).
+ * A copy saved in that shape still loads, its groups run together in order, so
+ * the live site keeps its gallery whichever version of the file it has.
  */
-export function parseWorkPhases(data: unknown): WorkPhase[] {
-  const list = Array.isArray(data) ? data : (data as { phases?: unknown } | null)?.phases;
+export function parseWorkPhotos(data: unknown): WorkPhoto[] {
+  const root = data as { photos?: unknown; phases?: unknown } | null;
+  const list = Array.isArray(data) ? data : (root?.photos ?? root?.phases);
   if (!Array.isArray(list)) return [];
 
-  return list.flatMap((item): WorkPhase[] => {
-    const title = typeof item?.title === 'string' ? item.title.trim() : '';
-    const photos = Array.isArray(item?.photos) ? item.photos.flatMap(parsePhoto) : [];
-    if (!title || !photos.length) return [];
-    return [{ title, columns: columnsFor(photos.length), photos }];
-  });
+  return list.flatMap((item): WorkPhoto[] =>
+    Array.isArray(item?.photos) ? item.photos.flatMap(parsePhoto) : parsePhoto(item),
+  );
 }
 
 function parsePhoto(item: unknown): WorkPhoto[] {
@@ -335,20 +258,4 @@ function parsePhoto(item: unknown): WorkPhoto[] {
   const caption = typeof photo?.caption === 'string' ? photo.caption.trim() : '';
   const alt = typeof photo?.alt === 'string' && photo.alt.trim() ? photo.alt.trim() : caption;
   return [{ image, caption, alt }];
-}
-
-/**
- * Tiles per desktop row, chosen so the rows come out even: 5 photos sit in one
- * row of five, 8 in two rows of four, 6 in two rows of three. Worked out here
- * so whoever edits the JSON never has to think about layout.
- *
- * A tab long enough to page always uses 4, so each batch of WORK_PAGE_SIZE
- * fills its rows exactly instead of leaving a ragged last row per batch.
- */
-function columnsFor(count: number): number {
-  if (count > WORK_PAGE_SIZE) return 4;
-  if (count % 5 === 0) return 5;
-  if (count % 4 === 0) return 4;
-  if (count % 3 === 0) return 3;
-  return 4;
 }

@@ -779,43 +779,13 @@ a:hover { color: var(--rm-red-dark); }
 /* ----------------------------------------------------------------- work */
 .rm-work { padding-block: var(--rm-section); background: #fff; }
 
-.rm-tabs {
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px;
-  width: fit-content; max-width: 100%;
-  margin: -24px auto 32px;
-  padding: 6px;
-  background: var(--rm-surface);
-  border: 1px solid var(--rm-line);
-  border-radius: 999px;
-}
-.rm-tabs__tab {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 10px 18px;
-  font: 600 .95rem/1.2 var(--rm-body);
-  color: var(--rm-muted);
-  background: transparent;
-  border: 0; border-radius: 999px;
-  cursor: pointer;
-  transition: background-color .15s ease, color .15s ease, box-shadow .15s ease;
-}
-.rm-tabs__tab:hover { color: var(--rm-ink); }
-.rm-tabs__tab[aria-selected="true"] { background: #fff; color: var(--rm-ink); box-shadow: var(--rm-shadow-sm); }
-.rm-tabs__count {
-  min-width: 22px;
-  padding: 1px 7px;
-  border-radius: 999px;
-  background: var(--rm-line);
-  font-size: .75rem;
-  color: var(--rm-muted);
-}
-.rm-tabs__tab[aria-selected="true"] .rm-tabs__count { background: var(--rm-red); color: #fff; }
-
 /* Job photos are portrait phone shots, so the tiles are 3:4. Landscape tiles
-   would crop the roofline out of nearly every one. The column count comes from
-   the phase itself (--rm-cols), so each stage fills its rows evenly. */
+   would crop the roofline out of nearly every one. The first photo leads at
+   2x2; its own height is ignored (absolute image, no aspect ratio) so the small
+   tiles beside it set the row height and the edges line up exactly. */
 .rm-work__grid {
   display: grid;
-  grid-template-columns: repeat(var(--rm-cols, 4), minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 14px;
 }
 
@@ -829,8 +799,19 @@ a:hover { color: var(--rm-red-dark); }
   border: 0; border-radius: 10px;
   cursor: zoom-in;
 }
-.rm-work__item img { width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+.rm-work__item img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
 .rm-work__item:hover img { transform: scale(1.05); }
+.rm-work__item:focus-visible { outline: 3px solid var(--rm-red); outline-offset: 3px; }
+
+.rm-work__grid.has-feature .rm-work__item:first-child {
+  grid-column: span 2; grid-row: span 2;
+  aspect-ratio: auto;
+  border-radius: var(--rm-radius-lg);
+}
+.rm-work__grid.has-feature .rm-work__item:first-child .rm-work__caption {
+  padding: 90px 24px 22px;
+  font: 600 1.15rem/1.3 var(--rm-display);
+}
 
 .rm-work__caption {
   position: absolute; inset: auto 0 0 0;
@@ -855,15 +836,19 @@ a:hover { color: var(--rm-red-dark); }
 .rm-work__item:hover .rm-work__zoom,
 .rm-work__item:focus-visible .rm-work__zoom { opacity: 1; transform: none; }
 
-/* "Show more" under a long gallery: a quiet count, and one outlined button whose
-   chevron points the way the list will move. */
-.rm-work__more {
-  display: flex; flex-direction: column; align-items: center; gap: 12px;
-  margin-top: 32px;
+/* "+N more photos" over the last tile when the list outgrows the grid. The
+   tablet copy sits on the tile before, since three columns fit one tile fewer. */
+.rm-work__rest {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  background: rgba(17, 19, 22, .64);
+  color: #fff;
+  font: 700 2.2rem/1 var(--rm-display);
+  transition: background-color .2s ease;
 }
-.rm-work__count { margin: 0; font-size: .9rem; color: var(--rm-muted); font-variant-numeric: tabular-nums; }
-.rm-work__more-icon rm-icon { transform: rotate(90deg); transition: transform .2s ease; }
-.rm-work__more-icon.is-up rm-icon { transform: rotate(-90deg); }
+.rm-work__rest small { font: 500 .88rem/1.3 var(--rm-body); color: rgba(255, 255, 255, .85); }
+.rm-work__item:hover .rm-work__rest { background: rgba(17, 19, 22, .5); }
+.rm-work__rest--tablet { display: none; }
 
 /* ------------------------------------------------------------- lightbox */
 body.rm-lightbox-open { overflow: hidden; }
@@ -1233,6 +1218,13 @@ body.rm-lightbox-open { overflow: hidden; }
   .rm-work__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
+/* Tablet: lead 2x2 plus 11 tiles fills five rows of three, so the 13th waits in
+   the viewer and the tile before it carries the count. */
+@media (min-width: 561px) and (max-width: 900px) {
+  .rm-work__grid.has-feature .rm-work__item:nth-child(13) { display: none; }
+  .rm-work__rest--tablet { display: flex; }
+}
+
 @media (max-width: 720px) {
   body.rm-body { font-size: 16px; }
   .rm-slider { --rm-per-view: 1; --rm-slide-gap: 16px; }
@@ -1271,9 +1263,6 @@ body.rm-lightbox-open { overflow: hidden; }
   .rm-cta__actions { width: 100%; }
   .rm-cta__actions .rm-btn { flex: 1 1 100%; }
 
-  .rm-tabs { width: 100%; border-radius: 16px; }
-  .rm-tabs__tab { flex: 1 1 auto; justify-content: center; }
-
   .rm-lightbox { padding: 60px 12px 100px; }
   .rm-lightbox__nav { top: auto; bottom: 24px; margin-top: 0; }
   .rm-lightbox__nav--prev { left: calc(50% - 66px); }
@@ -1282,7 +1271,13 @@ body.rm-lightbox-open { overflow: hidden; }
 
 @media (max-width: 560px) {
   .rm-hero__eyebrow { font-size: .74rem; letter-spacing: .08em; }
-  .rm-work__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .rm-work__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  /* Two columns leave nothing beside a 2x2 lead to set its height, so it runs
+     full width at its own ratio instead. */
+  .rm-work__grid.has-feature .rm-work__item:first-child { grid-column: 1 / -1; grid-row: auto; aspect-ratio: 4 / 5; }
+  .rm-work__grid.has-feature .rm-work__item:first-child .rm-work__caption { padding: 70px 18px 16px; font-size: 1.05rem; }
+  .rm-work__caption { padding: 36px 10px 10px; font-size: .8rem; }
+  .rm-work__zoom { display: none; }
   .rm-quickstart__option { flex-direction: column; align-items: flex-start; gap: 10px; min-height: 0; }
 }
 
