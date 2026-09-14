@@ -917,8 +917,8 @@ body.rm-lightbox-open { overflow: hidden; }
 /* -------------------------------------------------------------- reviews */
 .rm-reviews { padding-block: var(--rm-section); background: var(--rm-sand); }
 
-/* A native scroll-snap strip: swiping works on phones for free, and the arrows,
-   dots and autoplay just scroll it. Cards in view: 3, then 2, then 1. */
+/* A native scroll-snap strip: swiping works on phones for free, and the dots
+   and autoplay just scroll it. Cards in view: 3, then 2, then 1. */
 .rm-slider { --rm-per-view: 3; --rm-slide-gap: 24px; }
 .rm-slider__track {
   display: flex; gap: var(--rm-slide-gap);
@@ -942,22 +942,6 @@ body.rm-lightbox-open { overflow: hidden; }
   display: flex; align-items: center; justify-content: center; gap: 18px;
   margin-top: 36px;
 }
-.rm-slider__arrow {
-  display: grid; place-items: center;
-  flex: none;
-  width: 46px; height: 46px;
-  padding: 0;
-  color: var(--rm-ink);
-  background: #fff;
-  border: 1px solid var(--rm-line); border-radius: 50%;
-  box-shadow: var(--rm-shadow-sm);
-  cursor: pointer;
-  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
-}
-.rm-slider__arrow:hover { background: var(--rm-red); border-color: var(--rm-red); color: #fff; }
-.rm-slider__arrow rm-icon { width: 22px; height: 22px; }
-.rm-slider__arrow--prev rm-icon { transform: rotate(180deg); }
-
 .rm-slider__dots { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; }
 .rm-slider__dot {
   display: grid; place-items: center;
@@ -1939,28 +1923,4 @@ body.rm-modal-open { overflow: hidden; }
     width: auto;
     bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
-}
-
-/* ------------------------------------------------------------ action dock */
-/* Call and Free estimate pinned to the bottom of a phone screen. */
-.rm-dock { display: none; }
-
-@media (max-width: 720px) {
-  .rm-dock {
-    position: fixed; left: 0; right: 0; bottom: 0;
-    z-index: 900;
-    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 10px;
-    padding: 10px var(--rm-gutter) calc(10px + env(safe-area-inset-bottom, 0px));
-    background: rgba(255, 255, 255, .97);
-    border-top: 1px solid var(--rm-line);
-    box-shadow: 0 -8px 24px rgba(15, 22, 32, .08);
-    transition: transform .25s ease;
-  }
-  .rm-dock .rm-btn { padding: 13px 12px; font-size: .98rem; }
-  /* Out of the way while the menu drawer is open. */
-  body.rm-nav-open .rm-dock { transform: translateY(110%); }
-
-  /* Room at the end of the page, so the dock never covers the footer's last line. */
-  body.rm-body { padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)); }
-  .rm-chatpop { bottom: calc(82px + env(safe-area-inset-bottom, 0px)); }
 }
