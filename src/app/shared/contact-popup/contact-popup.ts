@@ -44,7 +44,8 @@ export function greetingFor(hour: number): string {
  * kept out of sight while the card is up and handed back the moment the card
  * closes. After that, tawk.to's icon is the way into the chat — and the only
  * place a reply's unread badge appears. If the estimate form is already open
- * when the timer runs out, the card is skipped and the icon shows straight away.
+ * when the timer runs out, the card is skipped and the icon is handed straight
+ * back — it appears once the form closes, since the form hides tawk.to entirely.
  */
 @Component({
   selector: 'rm-contact-popup',

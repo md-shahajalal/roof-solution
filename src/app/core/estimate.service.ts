@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { ESTIMATE_FORM } from './site.config';
+import { TawkService } from './tawk.service';
 
 /**
  * What the form should already have filled in when it opens — for example the
@@ -56,6 +57,8 @@ export interface EstimateRequest {
  */
 @Injectable({ providedIn: 'root' })
 export class EstimateService {
+  private readonly tawk = inject(TawkService);
+
   private readonly open$ = signal(false);
   /** True while the modal is mounted and visible. */
   readonly isOpen = this.open$.asReadonly();
@@ -89,12 +92,17 @@ export class EstimateService {
     this.open$.set(true);
     // The page behind a fixed-position overlay must not scroll with it.
     document.body.classList.add('rm-modal-open');
+    // tawk.to's icon and chat window float above the overlay and sit on top of
+    // the form's own buttons on a phone. One task at a time: out of the way
+    // while the visitor fills this in, back as soon as they are done.
+    this.tawk.setCovered(true);
   }
 
   close(): void {
     if (!this.open$()) return;
     this.open$.set(false);
     document.body.classList.remove('rm-modal-open');
+    this.tawk.setCovered(false);
     this.returnFocusTo?.focus?.();
     this.returnFocusTo = null;
   }

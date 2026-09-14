@@ -87,6 +87,19 @@ export class TawkService {
    */
   private iconWanted = true;
 
+  /**
+   * Whether a full-screen dialog — the estimate form — is covering the page.
+   *
+   * Kept apart from `iconWanted` because the two are owned by different things
+   * and overlap in time: the form can open while the greeting card is up, or
+   * the card's Contact Us can fall back to opening the form. With one shared
+   * switch, whichever closed first would bring the icon back under the other.
+   * tawk.to draws above every z-index on the page, so while this is set the
+   * whole widget — icon and any open chat window — is hidden, and it comes back
+   * exactly as it was when the dialog closes.
+   */
+  private covered = false;
+
   /** A "Contact Us" press waiting for the script, and what to do if it never comes. */
   private pending: (() => void) | null = null;
   private deadline: ReturnType<typeof setTimeout> | undefined;
@@ -129,7 +142,7 @@ export class TawkService {
     // icon on screen under the greeting card for about two seconds (measured in
     // a real browser). onBeforeLoad runs once the API exists but before render.
     api.onBeforeLoad = () => {
-      if (!this.iconWanted) api.hideWidget?.();
+      if (!this.shouldShow()) api.hideWidget?.();
     };
 
     api.onLoad = () => {
@@ -166,6 +179,15 @@ export class TawkService {
   }
 
   /**
+   * Hides the whole widget while a dialog covers the page, and restores it when
+   * the dialog closes. Recorded before the script arrives, like the icon.
+   */
+  setCovered(covered: boolean): void {
+    this.covered = covered;
+    if (this.state() === 'ready') this.applyIcon();
+  }
+
+  /**
    * Opens the chat window, or runs `fallback` if that is not going to happen.
    *
    * Pressed before the script has arrived, this waits for it — up to
@@ -188,13 +210,24 @@ export class TawkService {
     this.load();
   }
 
+  private shouldShow(): boolean {
+    return this.iconWanted && !this.covered;
+  }
+
   private applyIcon(): void {
-    if (this.iconWanted) window.Tawk_API?.showWidget?.();
+    if (this.shouldShow()) window.Tawk_API?.showWidget?.();
     else window.Tawk_API?.hideWidget?.();
   }
 
   private reveal(): void {
     this.iconWanted = true;
+    // Contact Us pressed, then the form opened before tawk.to arrived: the chat
+    // must not spring open on top of an enquiry in progress. It is there, with
+    // its icon, once the form closes.
+    if (this.covered) {
+      window.Tawk_API?.hideWidget?.();
+      return;
+    }
     window.Tawk_API?.showWidget?.();
     window.Tawk_API?.maximize?.();
   }

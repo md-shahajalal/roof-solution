@@ -160,6 +160,64 @@ describe('TawkService', () => {
     expect(api.hideWidget).not.toHaveBeenCalled();
   });
 
+  it('hides the whole widget while the estimate form covers the page, and restores it after', () => {
+    const tawk = service(PATH);
+    tawk.load();
+    const api = arrive();
+    vi.mocked(api.showWidget!).mockClear();
+
+    tawk.setCovered(true);
+    expect(api.hideWidget).toHaveBeenCalledTimes(1);
+
+    tawk.setCovered(false);
+    expect(api.showWidget).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the icon away when the form closes while the greeting card is still up', () => {
+    const tawk = service(PATH);
+    tawk.load();
+    const api = arrive();
+
+    tawk.setIconVisible(false);
+    tawk.setCovered(true);
+    vi.mocked(api.showWidget!).mockClear();
+
+    tawk.setCovered(false);
+    expect(api.showWidget).not.toHaveBeenCalled();
+
+    tawk.setIconVisible(true);
+    expect(api.showWidget).toHaveBeenCalledTimes(1);
+  });
+
+  it('never draws the widget when it arrives while the form is already open', () => {
+    const tawk = service(PATH);
+    tawk.setCovered(true);
+    tawk.load();
+
+    const api = window.Tawk_API!;
+    api.hideWidget = vi.fn();
+    api.onBeforeLoad!();
+
+    expect(api.hideWidget).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not spring the chat open over the form when Contact Us was pressed first', () => {
+    const tawk = service(PATH);
+    const fallback = vi.fn();
+
+    tawk.open(fallback);
+    tawk.setCovered(true);
+    const api = arrive();
+
+    expect(api.maximize).not.toHaveBeenCalled();
+    expect(api.showWidget).not.toHaveBeenCalled();
+    expect(fallback).not.toHaveBeenCalled();
+
+    // The chat is there, icon and all, once the form closes.
+    tawk.setCovered(false);
+    expect(api.showWidget).toHaveBeenCalled();
+  });
+
   it('opens the chat the moment it arrives when Contact Us was pressed first', () => {
     const tawk = service(PATH);
     const fallback = vi.fn();
