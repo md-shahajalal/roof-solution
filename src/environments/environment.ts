@@ -25,5 +25,6 @@ export const environment: Environment = {
 
   // "propertyId/widgetId", or the whole link from tawk.to > Administration >
   // Channels > Chat Widget, from the BUSINESS tawk.to account.
-  tawk: 'https://embed.tawk.to/6aa7f4a39117af34473dabcb/1k2g177ii',
+  // tawk: 'https://embed.tawk.to/6aa7f4a39117af34473dabcb/1k2g177ii',
+  tawk: 'https://tawk.to/chat/6aa7f4a39117af34473dabcb/1k2g177ii?layout=modern',
 };

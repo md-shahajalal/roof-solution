@@ -18,5 +18,6 @@ export const environment: Environment = {
   // "propertyId/widgetId", or the whole link from tawk.to > Administration >
   // Channels > Chat Widget, from the DEVELOPMENT tawk.to account. A property ID
   // on its own is not enough: the chat stays off and the browser console says so.
-  tawk: 'https://embed.tawk.to/6aa28cd7a9c2983442421257/1k25fcbeu',
+  // tawk: 'https://embed.tawk.to/6aa28cd7a9c2983442421257/1k25fcbeu',
+  tawk: 'https://tawk.to/chat/6aa28cd7a9c2983442421257/1k25fcbeu?layout=modern',
 };
