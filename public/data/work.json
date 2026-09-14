@@ -1,0 +1,110 @@
+{
+  "_howToEdit": "The \"Our work\" photos, grouped into tabs. Each { ... } block in phases is one tab: title is the tab name, photos is its list. To add a photo, upload it to public_html/images/work/ in cPanel, then copy one photo block, paste it after the last one in that tab, and change image, caption and alt. image is the file path; caption is shown on the photo; alt describes the photo for blind visitors and Google. Before uploading, resize each photo to about 1600 pixels wide and under 500 KB (phone photos are often 3 to 5 MB, which makes the page slow); any free image resizer works. A tab can hold as many photos as you like: the website shows 12 at a time with a Show more button. Put a comma between blocks, but not after the last one. Save the file and reload the website; no rebuild is needed. If the photos disappear, a comma or quote is out of place: paste the file into jsonlint.com to find it.",
+  "phases": [
+    {
+      "title": "Tear-off and new decking",
+      "photos": [
+        {
+          "image": "/images/work/01.jpg",
+          "caption": "New plywood decking, bundles staged",
+          "alt": "New plywood roof decking with shingle bundles staged along the ridge"
+        },
+        {
+          "image": "/images/work/02.jpg",
+          "caption": "Decking replaced to the eave edge",
+          "alt": "Replaced roof decking running to the eave above a metal awning"
+        },
+        {
+          "image": "/images/work/03.jpg",
+          "caption": "Low-slope transition, cap sheet laid",
+          "alt": "Cap sheet laid at the transition between steep and low-slope sections"
+        },
+        {
+          "image": "/images/work/04.jpg",
+          "caption": "Full deck re-sheeted before underlayment",
+          "alt": "A fully re-sheeted roof deck marked up before underlayment goes down"
+        },
+        {
+          "image": "/images/work/05.jpg",
+          "caption": "Deck complete, material staged on the ridge",
+          "alt": "Completed roof deck with shingle bundles stacked along the ridge"
+        }
+      ]
+    },
+    {
+      "title": "Finished roof",
+      "photos": [
+        {
+          "image": "/images/work/2.jpg",
+          "caption": "Finished ridge with continuous vent",
+          "alt": "Completed shingle roof with a continuous ridge vent running its length"
+        },
+        {
+          "image": "/images/work/3.jpg",
+          "caption": "Hip and ridge caps installed",
+          "alt": "Hip and ridge caps installed along the peak of a new shingle roof"
+        },
+        {
+          "image": "/images/work/4.jpg",
+          "caption": "New vents flashed into the field",
+          "alt": "Roof vents flashed into the shingle field on a completed slope"
+        },
+        {
+          "image": "/images/work/5.jpg",
+          "caption": "Completed slope, ridge cap detail",
+          "alt": "A finished shingle slope meeting the ridge cap line"
+        },
+        {
+          "image": "/images/work/6.jpg",
+          "caption": "Ridge vents run the length of the roof",
+          "alt": "Ridge vents running the full length of a completed roof"
+        },
+        {
+          "image": "/images/work/7.jpg",
+          "caption": "Finished field around existing skylights",
+          "alt": "New shingles finished around existing skylights"
+        },
+        {
+          "image": "/images/work/8.jpg",
+          "caption": "Skylight curbs re-flashed and sealed",
+          "alt": "Re-flashed and sealed skylight curbs on a new shingle roof"
+        },
+        {
+          "image": "/images/work/9.jpg",
+          "caption": "Completed re-roof, full elevation",
+          "alt": "A completed re-roof seen across the full elevation of the building"
+        },
+        {
+          "image": "/images/work/8.jpg",
+          "caption": "added 1",
+          "alt": "Re-flashed and sealed skylight curbs on a new shingle roof"
+        },
+        {
+          "image": "/images/work/9.jpg",
+          "caption": "added 2",
+          "alt": "A completed re-roof seen across the full elevation of the building"
+        },
+        {
+          "image": "/images/work/8.jpg",
+          "caption": "added 3",
+          "alt": "Re-flashed and sealed skylight curbs on a new shingle roof"
+        },
+        {
+          "image": "/images/work/9.jpg",
+          "caption": "added 4",
+          "alt": "A completed re-roof seen across the full elevation of the building"
+        },
+        {
+          "image": "/images/work/8.jpg",
+          "caption": "added 5",
+          "alt": "Re-flashed and sealed skylight curbs on a new shingle roof"
+        },
+        {
+          "image": "/images/work/9.jpg",
+          "caption": "added 6",
+          "alt": "A completed re-roof seen across the full elevation of the building"
+        }
+      ]
+    }
+  ]
+}

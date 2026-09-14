@@ -53,8 +53,11 @@ export interface WorkPhoto {
 
 export interface WorkPhase {
   title: string;
-  /** Presentational: how many tiles per row on desktop, so rows come out even. */
-  columns: 4 | 5;
+  /**
+   * Presentational: how many tiles per row on desktop, so rows come out even.
+   * Worked out from the photo count when work.json is read, not stored in it.
+   */
+  columns: number;
   photos: readonly WorkPhoto[];
 }
 

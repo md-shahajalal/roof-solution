@@ -12,11 +12,11 @@ export const environment: Environment = {
   production: false,
 
   phone: '(707) 641-6198',
-  email: 'mdshahajalal168@gmail.com',
-  formToken: 'mdshahajalal168@gmail.com',
+  email: '6mehedihasan017015@gmail.com',
+  formToken: '6mehedihasan017015@gmail.com',
 
   // "propertyId/widgetId", or the whole link from tawk.to > Administration >
   // Channels > Chat Widget, from the DEVELOPMENT tawk.to account. A property ID
   // on its own is not enough: the chat stays off and the browser console says so.
-  tawk: 'https://tawk.to/chat/6aa3a97b279bff344394a8e7/1k27ks3i3?layout=modern',
+  tawk: 'https://embed.tawk.to/6aa28cd7a9c2983442421257/1k25fcbeu',
 };

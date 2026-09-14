@@ -855,6 +855,16 @@ a:hover { color: var(--rm-red-dark); }
 .rm-work__item:hover .rm-work__zoom,
 .rm-work__item:focus-visible .rm-work__zoom { opacity: 1; transform: none; }
 
+/* "Show more" under a long gallery: a quiet count, and one outlined button whose
+   chevron points the way the list will move. */
+.rm-work__more {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  margin-top: 32px;
+}
+.rm-work__count { margin: 0; font-size: .9rem; color: var(--rm-muted); font-variant-numeric: tabular-nums; }
+.rm-work__more-icon rm-icon { transform: rotate(90deg); transition: transform .2s ease; }
+.rm-work__more-icon.is-up rm-icon { transform: rotate(-90deg); }
+
 /* ------------------------------------------------------------- lightbox */
 body.rm-lightbox-open { overflow: hidden; }
 
