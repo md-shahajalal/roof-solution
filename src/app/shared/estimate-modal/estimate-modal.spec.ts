@@ -597,6 +597,27 @@ describe('EstimateModalComponent', () => {
     );
   });
 
+  withFields('photos')('accepts a phone photo that arrives with no type, going by its name', async () => {
+    estimate.open();
+    await fixture.whenStable();
+
+    // What Android hands over for a picture picked through Google Photos or Drive.
+    await pickPhoto(new File(['fake-heic-bytes'], 'IMG_2041.HEIC', { type: '', lastModified: 1 }));
+
+    expect(fixture.nativeElement.querySelector('.rm-upload__name')?.textContent).toBe('IMG_2041.HEIC');
+    expect(fixture.nativeElement.querySelector('.rm-field__error')).toBeNull();
+  });
+
+  withFields('photos')('still rejects an untyped file whose name is not a photo', async () => {
+    estimate.open();
+    await fixture.whenStable();
+
+    await pickPhoto(new File(['%PDF'], 'quote.pdf', { type: '', lastModified: 1 }));
+
+    expect(fixture.nativeElement.querySelector('.rm-upload__list')).toBeNull();
+    expect(fixture.nativeElement.querySelector('.rm-field__error')?.textContent).toContain('not an image');
+  });
+
   withFields('photos')('rejects a file that is not an image', async () => {
     estimate.open();
     await fixture.whenStable();

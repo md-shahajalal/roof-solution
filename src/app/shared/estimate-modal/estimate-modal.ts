@@ -13,7 +13,7 @@ import {
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { IconComponent } from '../icon/icon';
 import { EstimateService } from '../../core/estimate.service';
-import { compressImage } from '../../core/image-compress';
+import { compressImage, isImageFile } from '../../core/image-compress';
 import { noLinks } from '../../core/no-links.validator';
 import { ESTIMATE_FORM, SITE, telHref } from '../../core/site.config';
 
@@ -284,7 +284,7 @@ export class EstimateModalComponent {
           rejected.push(`${file.name} (past the ${this.limits.maxFiles}-photo limit)`);
           continue;
         }
-        if (!file.type.startsWith('image/')) {
+        if (!isImageFile(file)) {
           rejected.push(`${file.name} (not an image)`);
           continue;
         }

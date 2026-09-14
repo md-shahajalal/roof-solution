@@ -26,7 +26,7 @@ export async function compressImage(
   maxEdge: number = ESTIMATE_FORM.compress.maxEdge,
   quality: number = ESTIMATE_FORM.compress.quality,
 ): Promise<File> {
-  if (!file.type.startsWith('image/')) return file;
+  if (!isImageFile(file)) return file;
   // Re-encoding an animated GIF would flatten it to one frame, and SVG has no
   // meaningful pixel size to reduce.
   if (file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
@@ -131,6 +131,22 @@ async function decode(file: File): Promise<Decoded | null> {
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** Extensions trusted as a photo when the browser reports no type at all. */
+const IMAGE_EXTENSION = /\.(jpe?g|png|gif|webp|avif|heic|heif|bmp|tiff?)$/i;
+
+/**
+ * Whether a picked file is a photo.
+ *
+ * The type alone is not enough on phones. Android hands over an empty `type` for
+ * files picked through Google Photos, Drive or a third-party gallery, and for
+ * HEIC on engines that do not know the format — so checking `image/` only turned
+ * real roof photos away as "not an image". With no type to go on, the file name
+ * decides; a type that is present and says otherwise still wins.
+ */
+export function isImageFile(file: File): boolean {
+  return file.type ? file.type.startsWith('image/') : IMAGE_EXTENSION.test(file.name);
 }
 
 /** `roof damage.HEIC` becomes `roof damage.jpg`, since the bytes are now JPEG. */

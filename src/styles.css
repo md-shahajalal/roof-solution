@@ -1798,11 +1798,19 @@ body.rm-modal-open { overflow: hidden; }
   .rm-form__fineprint { display: flex; }
 }
 
-/* Phones: a full-screen sheet, Send first and full width. */
+/* Phones: a full-screen sheet, Send first and full width.
+
+   The overlay is the scroller, so the panel has to be allowed to grow past the
+   screen. `align-items: stretch` pinned it to exactly the overlay's height, and
+   the panel's own `overflow: hidden` then clipped everything below the fold —
+   the form could not scroll and the photo picker was out of reach. `flex-start`
+   with a min-height keeps the full-screen look for a short form and lets a long
+   one run on. */
 @media (max-width: 620px) {
-  .rm-modal { padding: 0; align-items: stretch; }
-  .rm-modal__panel { max-width: none; min-height: 100%; margin: 0; border-radius: 0; box-shadow: none; }
-  .rm-modal__main { padding: 22px 18px 28px; }
+  .rm-modal { padding: 0; align-items: flex-start; -webkit-overflow-scrolling: touch; }
+  .rm-modal__panel { max-width: none; min-height: 100%; margin: 0; overflow: visible; border-radius: 0; box-shadow: none; }
+  /* The home indicator on notched phones sits over the last line otherwise. */
+  .rm-modal__main { padding: 22px 18px calc(28px + env(safe-area-inset-bottom, 0px)); }
   .rm-modal__close { top: 14px; right: 14px; }
   .rm-modal__head { margin-bottom: 22px; }
   .rm-form__grid { grid-template-columns: minmax(0, 1fr); }
