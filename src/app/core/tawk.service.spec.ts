@@ -166,10 +166,39 @@ describe('TawkService', () => {
     const api = arrive();
     vi.mocked(api.showWidget!).mockClear();
 
-    tawk.setCovered(true);
+    tawk.setCovered('estimate', true);
     expect(api.hideWidget).toHaveBeenCalledTimes(1);
 
-    tawk.setCovered(false);
+    tawk.setCovered('estimate', false);
+    expect(api.showWidget).toHaveBeenCalledTimes(1);
+  });
+
+  it('hides the widget while a photo is open in the viewer, and brings it back after', () => {
+    const tawk = service(PATH);
+    tawk.load();
+    const api = arrive();
+    vi.mocked(api.showWidget!).mockClear();
+
+    tawk.setCovered('lightbox', true);
+    expect(api.hideWidget).toHaveBeenCalledTimes(1);
+
+    tawk.setCovered('lightbox', false);
+    expect(api.showWidget).toHaveBeenCalledTimes(1);
+  });
+
+  it('stays hidden until every covering layer has closed', () => {
+    const tawk = service(PATH);
+    tawk.load();
+    const api = arrive();
+
+    tawk.setCovered('estimate', true);
+    tawk.setCovered('lightbox', true);
+    vi.mocked(api.showWidget!).mockClear();
+
+    tawk.setCovered('lightbox', false);
+    expect(api.showWidget).not.toHaveBeenCalled();
+
+    tawk.setCovered('estimate', false);
     expect(api.showWidget).toHaveBeenCalledTimes(1);
   });
 
@@ -179,10 +208,10 @@ describe('TawkService', () => {
     const api = arrive();
 
     tawk.setIconVisible(false);
-    tawk.setCovered(true);
+    tawk.setCovered('estimate', true);
     vi.mocked(api.showWidget!).mockClear();
 
-    tawk.setCovered(false);
+    tawk.setCovered('estimate', false);
     expect(api.showWidget).not.toHaveBeenCalled();
 
     tawk.setIconVisible(true);
@@ -191,7 +220,7 @@ describe('TawkService', () => {
 
   it('never draws the widget when it arrives while the form is already open', () => {
     const tawk = service(PATH);
-    tawk.setCovered(true);
+    tawk.setCovered('estimate', true);
     tawk.load();
 
     const api = window.Tawk_API!;
@@ -206,7 +235,7 @@ describe('TawkService', () => {
     const fallback = vi.fn();
 
     tawk.open(fallback);
-    tawk.setCovered(true);
+    tawk.setCovered('estimate', true);
     const api = arrive();
 
     expect(api.maximize).not.toHaveBeenCalled();
@@ -214,7 +243,7 @@ describe('TawkService', () => {
     expect(fallback).not.toHaveBeenCalled();
 
     // The chat is there, icon and all, once the form closes.
-    tawk.setCovered(false);
+    tawk.setCovered('estimate', false);
     expect(api.showWidget).toHaveBeenCalled();
   });
 

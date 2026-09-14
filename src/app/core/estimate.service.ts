@@ -95,14 +95,14 @@ export class EstimateService {
     // tawk.to's icon and chat window float above the overlay and sit on top of
     // the form's own buttons on a phone. One task at a time: out of the way
     // while the visitor fills this in, back as soon as they are done.
-    this.tawk.setCovered(true);
+    this.tawk.setCovered('estimate', true);
   }
 
   close(): void {
     if (!this.open$()) return;
     this.open$.set(false);
     document.body.classList.remove('rm-modal-open');
-    this.tawk.setCovered(false);
+    this.tawk.setCovered('estimate', false);
     this.returnFocusTo?.focus?.();
     this.returnFocusTo = null;
   }

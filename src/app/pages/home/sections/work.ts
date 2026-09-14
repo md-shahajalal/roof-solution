@@ -12,6 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
+import { TawkService } from '../../../core/tawk.service';
 import type { WorkPhase, WorkPhoto } from '../../../core/models';
 
 /**
@@ -179,11 +180,15 @@ export class WorkComponent {
 
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector = inject(Injector);
+  private readonly tawk = inject(TawkService);
   private readonly closeButton = viewChild<ElementRef<HTMLButtonElement>>('closeButton');
   private returnFocus: HTMLElement | null = null;
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => document.body.classList.remove('rm-lightbox-open'));
+    inject(DestroyRef).onDestroy(() => {
+      document.body.classList.remove('rm-lightbox-open');
+      this.tawk.setCovered('lightbox', false);
+    });
     void this.load();
   }
 
@@ -246,6 +251,9 @@ export class WorkComponent {
     this.returnFocus = event.currentTarget as HTMLElement;
     this.index.set(i);
     document.body.classList.add('rm-lightbox-open');
+    // tawk.to's icon floats above the viewer and sits on the photo's corner, or
+    // on the next-photo arrow on a phone. Back once the viewer closes.
+    this.tawk.setCovered('lightbox', true);
     afterNextRender(() => this.closeButton()?.nativeElement.focus(), { injector: this.injector });
   }
 
@@ -253,6 +261,7 @@ export class WorkComponent {
     if (this.index() === null) return;
     this.index.set(null);
     document.body.classList.remove('rm-lightbox-open');
+    this.tawk.setCovered('lightbox', false);
     this.returnFocus?.focus();
     this.returnFocus = null;
   }

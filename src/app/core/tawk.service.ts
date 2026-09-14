@@ -40,6 +40,9 @@ declare global {
 
 type TawkState = 'off' | 'idle' | 'loading' | 'ready' | 'failed';
 
+/** The full-screen layers that put tawk.to out of sight while they are open. */
+export type TawkCover = 'estimate' | 'lightbox';
+
 /**
  * Turns the environment's `tawk` value into `propertyId/widgetId`.
  *
@@ -88,17 +91,19 @@ export class TawkService {
   private iconWanted = true;
 
   /**
-   * Whether a full-screen dialog — the estimate form — is covering the page.
+   * The full-screen layers covering the page right now — the estimate form, the
+   * photo viewer.
    *
-   * Kept apart from `iconWanted` because the two are owned by different things
-   * and overlap in time: the form can open while the greeting card is up, or
-   * the card's Contact Us can fall back to opening the form. With one shared
-   * switch, whichever closed first would bring the icon back under the other.
-   * tawk.to draws above every z-index on the page, so while this is set the
-   * whole widget — icon and any open chat window — is hidden, and it comes back
-   * exactly as it was when the dialog closes.
+   * Kept apart from `iconWanted`, and one entry per layer, because these are
+   * owned by different things and can overlap in time: the form can open while
+   * the greeting card is up, or the card's Contact Us can fall back to opening
+   * the form. With one shared switch, whichever closed first would bring the
+   * icon back under whatever was still open. tawk.to draws above every z-index
+   * on the page, so while anything is listed here the whole widget — icon and
+   * any open chat window — is hidden, and it comes back exactly as it was once
+   * the last layer closes.
    */
-  private covered = false;
+  private readonly covers = new Set<TawkCover>();
 
   /** A "Contact Us" press waiting for the script, and what to do if it never comes. */
   private pending: (() => void) | null = null;
@@ -179,11 +184,12 @@ export class TawkService {
   }
 
   /**
-   * Hides the whole widget while a dialog covers the page, and restores it when
-   * the dialog closes. Recorded before the script arrives, like the icon.
+   * Hides the whole widget while `by` covers the page, and restores it when
+   * nothing does any more. Recorded before the script arrives, like the icon.
    */
-  setCovered(covered: boolean): void {
-    this.covered = covered;
+  setCovered(by: TawkCover, covered: boolean): void {
+    if (covered) this.covers.add(by);
+    else this.covers.delete(by);
     if (this.state() === 'ready') this.applyIcon();
   }
 
@@ -211,7 +217,7 @@ export class TawkService {
   }
 
   private shouldShow(): boolean {
-    return this.iconWanted && !this.covered;
+    return this.iconWanted && !this.covers.size;
   }
 
   private applyIcon(): void {
@@ -224,7 +230,7 @@ export class TawkService {
     // Contact Us pressed, then the form opened before tawk.to arrived: the chat
     // must not spring open on top of an enquiry in progress. It is there, with
     // its icon, once the form closes.
-    if (this.covered) {
+    if (this.covers.size) {
       window.Tawk_API?.hideWidget?.();
       return;
     }
