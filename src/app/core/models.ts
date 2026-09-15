@@ -51,6 +51,13 @@ export interface WorkPhoto {
   alt: string;
 }
 
+/** The photo in "Why choose R&M", set in public/data/why-us.json. */
+export interface WhyUsPhoto {
+  image: string;
+  /** Describes the photograph for screen readers and search. */
+  alt: string;
+}
+
 export interface Testimonial {
   text: string;
   author: string;

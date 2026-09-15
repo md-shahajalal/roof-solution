@@ -1,0 +1,11 @@
+{
+  "_howToEdit": "The photo in the \"Why choose R&M\" section. image is the photo path: upload the photo to public_html/images/ in cPanel first. Use an upright (portrait) photo, about 800 x 900 pixels and under 300 KB. The logo sits over the photo's top-right corner, so pick a shot with sky or trees there and the roof lower down. alt describes the photo for blind visitors and Google. The earlier stock photo is kept in public_html/images/legacy/: to go back to it, copy the image and alt from _previous into photo. Save the file and reload the website; no rebuild is needed. If the old photo comes back on its own, a comma or quote is out of place: paste the file into jsonlint.com to find it.",
+  "photo": {
+    "image": "/images/why-choose-us.jpg",
+    "alt": "A newly installed shingle roof completed by R&M Roofing Solutions"
+  },
+  "_previous": {
+    "image": "/images/legacy/why-choose-us.jpg",
+    "alt": "Newly installed shingles meeting a gable end with vented soffit"
+  }
+}

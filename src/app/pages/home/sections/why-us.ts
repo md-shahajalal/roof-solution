@@ -1,7 +1,23 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
 import { FEATURES } from '../../../core/content';
 import { SITE } from '../../../core/site.config';
+import type { WhyUsPhoto } from '../../../core/models';
+
+/**
+ * Where the section's photo is chosen. Like work.json, the file sits in public/,
+ * so the client can swap the photo in cPanel with no rebuild.
+ */
+const WHY_US_URL = 'data/why-us.json';
+
+/**
+ * Shown until why-us.json arrives, and kept if the file is broken, so the
+ * section never renders without a photo.
+ */
+export const DEFAULT_WHY_US_PHOTO: WhyUsPhoto = {
+  image: '/images/why-choose-us.jpg',
+  alt: `A newly installed shingle roof completed by ${SITE.name}`,
+};
 
 /**
  * A soft tinted band between two white sections: enough of a change of ground
@@ -16,12 +32,12 @@ import { SITE } from '../../../core/site.config';
       <div class="rm-container rm-why__inner">
 
         <div class="rm-why__visual">
-          <img class="rm-why__photo" src="/images/why-choose-us.jpg"
-               alt="A newly installed shingle roof completed by R&amp;M Roofing Solutions"
+          <img class="rm-why__photo" [src]="photo().image" [alt]="photo().alt"
                width="768" height="860" loading="lazy" decoding="async">
 
           <!-- The motto is the brand's own promise, so it sits with the logo on the
-               photograph rather than competing with the headline in the hero. -->
+               photograph rather than competing with the headline in the hero. Top
+               right, as the client asked, over sky rather than the roof. -->
           <figure class="rm-why__badge">
             <img src="/images/logo.png" width="500" height="392" [alt]="site.name" loading="lazy">
             <figcaption>&ldquo;{{ site.motto }}&rdquo;</figcaption>
@@ -56,4 +72,39 @@ import { SITE } from '../../../core/site.config';
 export class WhyUsComponent {
   protected readonly features = FEATURES;
   protected readonly site = SITE;
+  protected readonly photo = signal<WhyUsPhoto>(DEFAULT_WHY_US_PHOTO);
+
+  constructor() {
+    void this.load();
+  }
+
+  private async load(): Promise<void> {
+    try {
+      // no-cache: revalidate with the server on each visit, so an edit made in
+      // cPanel shows up straight away rather than when the browser cache expires.
+      const response = await fetch(new URL(WHY_US_URL, document.baseURI), { cache: 'no-cache' });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const photo = parseWhyUsPhoto(await response.json());
+      if (!photo) throw new Error('no image path in the file');
+      this.photo.set(photo);
+    } catch (error) {
+      console.error(`Could not load the photo from ${WHY_US_URL}. Is the JSON valid? Showing the built-in photo.`, error);
+    }
+  }
+}
+
+/**
+ * The JSON is edited by hand, so accept either `{ "photo": { ... } }` or the
+ * image and alt at the top level. No image path means null, so the caller keeps
+ * the photo it has rather than showing a broken one.
+ */
+export function parseWhyUsPhoto(data: unknown): WhyUsPhoto | null {
+  const root = data as { photo?: unknown } | null;
+  const raw = (root?.photo && typeof root.photo === 'object' ? root.photo : root) as
+    Partial<Record<keyof WhyUsPhoto, unknown>> | null;
+  const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
+
+  const image = text(raw?.image);
+  if (!image) return null;
+  return { image, alt: text(raw?.alt) || `A roof completed by ${SITE.name}` };
 }

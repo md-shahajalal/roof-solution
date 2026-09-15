@@ -625,7 +625,8 @@ a:hover { color: var(--rm-red-dark); }
   align-items: center;
 }
 
-.rm-why__visual { position: relative; padding-bottom: 48px; }
+/* Room above the photo for the logo badge, which overhangs its top-right corner. */
+.rm-why__visual { position: relative; padding-top: 48px; }
 .rm-why__photo {
   width: 100%;
   aspect-ratio: 1 / 1.12;
@@ -635,7 +636,7 @@ a:hover { color: var(--rm-red-dark); }
 }
 
 .rm-why__badge {
-  position: absolute; right: -20px; bottom: 0;
+  position: absolute; right: -20px; top: 0;
   width: min(290px, 72%);
   margin: 0;
   padding: 22px 22px 20px;
