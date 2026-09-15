@@ -101,26 +101,33 @@ export class IconComponent {
   readonly name = input.required<IconName>();
 }
 
-export type IconName =
-  | 'phone'
-  | 'check'
-  | 'star'
-  | 'play'
-  | 'chevron'
-  | 'calendar'
-  | 'house'
-  | 'search'
-  | 'shield'
-  | 'team'
-  | 'clock'
-  | 'wrench'
-  | 'hammer'
-  | 'medal'
-  | 'storm'
-  | 'quote'
-  | 'arrow'
-  | 'mail'
-  | 'pin'
-  | 'camera'
-  | 'image'
-  | 'chat';
+/**
+ * Every icon the template can draw. A runtime list, not just a type, so content
+ * loaded from JSON (services.json) can be checked against it.
+ */
+export const ICON_NAMES = [
+  'phone',
+  'check',
+  'star',
+  'play',
+  'chevron',
+  'calendar',
+  'house',
+  'search',
+  'shield',
+  'team',
+  'clock',
+  'wrench',
+  'hammer',
+  'medal',
+  'storm',
+  'quote',
+  'arrow',
+  'mail',
+  'pin',
+  'camera',
+  'image',
+  'chat',
+] as const;
+
+export type IconName = (typeof ICON_NAMES)[number];

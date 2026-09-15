@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
-import { SERVICES } from '../../../core/content';
+import { ServiceCatalog } from '../../../core/service-catalog';
 
 /**
  * The first two services, replacement and repair, are the jobs most visitors
@@ -31,7 +31,7 @@ import { SERVICES } from '../../../core/content';
         </div>
 
         <div class="rm-services__grid">
-          @for (service of services; track service.slug; let i = $index) {
+          @for (service of services(); track service.slug; let i = $index) {
             <article class="rm-service" [class.rm-service--featured]="i < 2">
               <div class="rm-service__media">
                 <img [src]="service.image" [alt]="service.alt"
@@ -56,5 +56,6 @@ import { SERVICES } from '../../../core/content';
   `,
 })
 export class ServicesComponent {
-  protected readonly services = SERVICES;
+  /** Loaded from public/data/services.json. See ServiceCatalog. */
+  protected readonly services = inject(ServiceCatalog).services;
 }

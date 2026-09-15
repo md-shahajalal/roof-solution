@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { IconComponent } from '../../shared/icon/icon';
 import { SITE, mailHref, telHref } from '../../core/site.config';
-import { SERVICES } from '../../core/content';
+import { ServiceCatalog } from '../../core/service-catalog';
 import { environment } from '../../../environments/environment';
 import { tawkWidgetPath } from '../../core/tawk.service';
 
@@ -13,7 +13,7 @@ import { tawkWidgetPath } from '../../core/tawk.service';
 })
 export class FooterComponent {
   protected readonly site = SITE;
-  protected readonly services = SERVICES;
+  protected readonly services = inject(ServiceCatalog).services;
   protected readonly telHref = telHref();
   protected readonly mailHref = mailHref();
   protected readonly year = new Date().getFullYear();

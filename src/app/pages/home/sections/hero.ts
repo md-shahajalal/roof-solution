@@ -1,8 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { IconComponent, IconName } from '../../../shared/icon/icon';
 import { SITE, telHref } from '../../../core/site.config';
 import { EstimateService } from '../../../core/estimate.service';
-import { SERVICES } from '../../../core/content';
+import { ServiceCatalog } from '../../../core/service-catalog';
 
 interface QuickOption {
   label: string;
@@ -73,7 +73,7 @@ interface QuickOption {
           <p class="rm-quickstart__sub">Pick one to start. It takes about a minute.</p>
 
           <div class="rm-quickstart__grid">
-            @for (option of options; track option.quote) {
+            @for (option of options(); track option.quote) {
               <button type="button" class="rm-quickstart__option" (click)="start($event, option.quote)">
                 <span class="rm-quickstart__icon"><rm-icon [name]="option.icon" /></span>
                 <span class="rm-quickstart__label">{{ option.label }}</span>
@@ -95,11 +95,12 @@ export class HeroComponent {
   protected readonly site = SITE;
   protected readonly telHref = telHref();
   private readonly estimate = inject(EstimateService);
+  private readonly catalog = inject(ServiceCatalog);
 
-  protected readonly options: readonly QuickOption[] = [
-    ...SERVICES.map((service) => ({ label: service.title, icon: service.icon, quote: service.quote })),
+  protected readonly options = computed((): readonly QuickOption[] => [
+    ...this.catalog.services().map((service) => ({ label: service.title, icon: service.icon, quote: service.quote })),
     { label: 'Not sure / other', icon: 'chat', quote: 'Other' },
-  ];
+  ]);
 
   /** Step one done: open the form on step two with the service already chosen. */
   protected start(event: Event, quote: string): void {

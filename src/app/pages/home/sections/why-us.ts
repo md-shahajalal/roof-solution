@@ -17,8 +17,8 @@ import { SITE } from '../../../core/site.config';
 
         <div class="rm-why__visual">
           <img class="rm-why__photo" src="/images/why-choose-us.jpg"
-               alt="Newly installed shingles meeting a gable end with vented soffit"
-               width="1000" height="1200" loading="lazy" decoding="async">
+               alt="A newly installed shingle roof completed by R&amp;M Roofing Solutions"
+               width="768" height="860" loading="lazy" decoding="async">
 
           <!-- The motto is the brand's own promise, so it sits with the logo on the
                photograph rather than competing with the headline in the hero. -->

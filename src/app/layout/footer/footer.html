@@ -15,7 +15,7 @@
     <div>
       <h2 class="rm-footer__title">Services</h2>
       <ul class="rm-footer__list">
-        @for (service of services; track service.slug) {
+        @for (service of services(); track service.slug) {
           <li><a href="#services">{{ service.title }}</a></li>
         }
       </ul>

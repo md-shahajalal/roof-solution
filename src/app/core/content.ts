@@ -34,6 +34,10 @@ export const FEATURES: readonly TrustItem[] = [
 ];
 
 /**
+ * The built-in services. The live list is public/data/services.json, loaded by
+ * ServiceCatalog; this copy only shows before that file arrives, or if it is
+ * broken, so keep it in step with the JSON.
+ *
  * TODO(client): confirm each service's `points`. They are drawn from what the
  * site already says and from the job photos (decking, ridge vents, flashing),
  * but the owner should check they match what a crew actually does.
@@ -67,7 +71,7 @@ export const SERVICES: readonly Service[] = [
     points: ['Findings explained in plain language', 'Honest repair-or-replace advice'],
     icon: 'search',
     image: '/images/service-roof-inspection.jpg',
-    alt: 'A brick home with a steep shingle roof and covered porch',
+    alt: 'A shingle roof with pipe boots, roof vents and a ridge vent ready for inspection',
   },
   {
     slug: 'storm-damage',
@@ -87,7 +91,7 @@ export const SERVICES: readonly Service[] = [
     points: ['Seasonal checkups', 'Small problems caught early'],
     icon: 'wrench',
     image: '/images/service-maintenance.jpg',
-    alt: 'Close-up of shingles, soffit vents and fascia at a gable end',
+    alt: 'Close-up of a shingle hip cap, flashing and a pipe boot on a finished roof',
   },
 ];
 
