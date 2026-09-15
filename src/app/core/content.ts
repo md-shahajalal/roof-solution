@@ -3,7 +3,10 @@ import type {
   Faq,
   ProcessStep,
   Service,
+  Testimonial,
   TrustItem,
+  WhyUsPhoto,
+  WorkPhoto,
 } from './models';
 import { SITE } from './site.config';
 
@@ -36,7 +39,7 @@ export const FEATURES: readonly TrustItem[] = [
 /**
  * The built-in services. The live list is public/data/services.json, loaded by
  * ServiceCatalog; this copy only shows before that file arrives, or if it is
- * broken, so keep it in step with the JSON.
+ * missing, broken or empty, so keep it in step with the JSON.
  *
  * TODO(client): confirm each service's `points`. They are drawn from what the
  * site already says and from the job photos (decking, ridge vents, flashing),
@@ -94,6 +97,60 @@ export const SERVICES: readonly Service[] = [
     alt: 'Close-up of a shingle hip cap, flashing and a pipe boot on a finished roof',
   },
 ];
+
+/**
+ * The built-in reviews. The live list is public/data/reviews.json; this copy is
+ * shown only if that file is missing, broken or holds no usable review, so keep
+ * it in step with the JSON.
+ */
+export const REVIEWS: readonly Testimonial[] = [
+  {
+    text: 'Excellent work. Professional, honest, and very reliable — I would recommend them to anyone.',
+    author: 'Sarah Mitchell',
+    rating: 5,
+  },
+  {
+    text: 'They did an amazing job on our roof. Fast, clean, and great quality work.',
+    author: 'Michael Turner',
+    rating: 5,
+  },
+  {
+    text: 'Best roofing company we have worked with. Very professional and trustworthy.',
+    author: 'Jessica Bennett',
+    rating: 5,
+  },
+];
+
+/**
+ * The built-in job photos. The live list is public/data/work.json; this copy is
+ * shown only if that file is missing, broken or holds no usable photo, so keep
+ * it in step with the JSON.
+ */
+export const WORK_PHOTOS: readonly WorkPhoto[] = [
+  { image: '/images/work/9.jpg',  caption: 'Completed re-roof, full elevation',          alt: 'A completed re-roof seen across the full elevation of the building' },
+  { image: '/images/work/2.jpg',  caption: 'Finished ridge with continuous vent',        alt: 'Completed shingle roof with a continuous ridge vent running its length' },
+  { image: '/images/work/01.jpg', caption: 'New plywood decking, bundles staged',        alt: 'New plywood roof decking with shingle bundles staged along the ridge' },
+  { image: '/images/work/3.jpg',  caption: 'Hip and ridge caps installed',               alt: 'Hip and ridge caps installed along the peak of a new shingle roof' },
+  { image: '/images/work/7.jpg',  caption: 'Finished field around existing skylights',   alt: 'New shingles finished around existing skylights' },
+  { image: '/images/work/04.jpg', caption: 'Full deck re-sheeted before underlayment',   alt: 'A fully re-sheeted roof deck marked up before underlayment goes down' },
+  { image: '/images/work/4.jpg',  caption: 'New vents flashed into the field',           alt: 'Roof vents flashed into the shingle field on a completed slope' },
+  { image: '/images/work/8.jpg',  caption: 'Skylight curbs re-flashed and sealed',       alt: 'Re-flashed and sealed skylight curbs on a new shingle roof' },
+  { image: '/images/work/02.jpg', caption: 'Decking replaced to the eave edge',          alt: 'Replaced roof decking running to the eave above a metal awning' },
+  { image: '/images/work/5.jpg',  caption: 'Completed slope, ridge cap detail',          alt: 'A finished shingle slope meeting the ridge cap line' },
+  { image: '/images/work/6.jpg',  caption: 'Ridge vents run the length of the roof',     alt: 'Ridge vents running the full length of a completed roof' },
+  { image: '/images/work/05.jpg', caption: 'Deck complete, material staged on the ridge', alt: 'Completed roof deck with shingle bundles stacked along the ridge' },
+  { image: '/images/work/03.jpg', caption: 'Low-slope transition, cap sheet laid',       alt: 'Cap sheet laid at the transition between steep and low-slope sections' },
+];
+
+/**
+ * The built-in "Why choose R&M" photo. The live one is set in
+ * public/data/why-us.json; this shows until that file arrives, and stays if the
+ * file is missing, broken or has no image path.
+ */
+export const WHY_US_PHOTO: WhyUsPhoto = {
+  image: '/images/why-choose-us.jpg',
+  alt: `A newly installed shingle roof completed by ${SITE.name}`,
+};
 
 /**
  * The "How it works" steps.

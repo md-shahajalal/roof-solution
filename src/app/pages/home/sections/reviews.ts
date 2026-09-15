@@ -11,14 +11,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
-import { stars } from '../../../core/content';
+import { REVIEWS, stars } from '../../../core/content';
 import type { Testimonial } from '../../../core/models';
 
 /**
  * Where the reviews live. The file sits in public/, so the build copies it next
  * to index.html untouched (no hash in the name). On the live site the client
  * edits public_html/data/reviews.json in cPanel and the next page load shows
- * the change, with no rebuild.
+ * the change, with no rebuild. If the file is missing, broken or holds no usable
+ * review, the built-in reviews in content.ts are shown instead.
  *
  * TODO(client): replace the sample reviews with real ones, ideally copied from
  * Google with the customer's permission. Reviews that turn out to be
@@ -332,10 +333,12 @@ export class ReviewsComponent {
       // cPanel shows up straight away rather than when the browser cache expires.
       const response = await fetch(new URL(REVIEWS_URL, document.baseURI), { cache: 'no-cache' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      this.reviews.set(parseReviews(await response.json()));
+      const parsed = parseReviews(await response.json());
+      if (!parsed.length) throw new Error('no usable reviews in the file');
+      this.reviews.set(parsed);
     } catch (error) {
-      console.error(`Could not load reviews from ${REVIEWS_URL}. Is the JSON valid?`, error);
-      return;
+      console.error(`Could not load reviews from ${REVIEWS_URL}. Is the JSON valid? Showing the built-in reviews.`, error);
+      this.reviews.set(REVIEWS);
     }
     this.index = this.looping() ? this.reviews().length : 0;
     afterNextRender(() => this.align(), { injector: this.injector });

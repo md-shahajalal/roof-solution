@@ -1,23 +1,15 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
-import { FEATURES } from '../../../core/content';
+import { FEATURES, WHY_US_PHOTO } from '../../../core/content';
 import { SITE } from '../../../core/site.config';
 import type { WhyUsPhoto } from '../../../core/models';
 
 /**
  * Where the section's photo is chosen. Like work.json, the file sits in public/,
- * so the client can swap the photo in cPanel with no rebuild.
+ * so the client can swap the photo in cPanel with no rebuild. Until it arrives,
+ * or if it is missing or broken, the built-in photo in content.ts is shown.
  */
 const WHY_US_URL = 'data/why-us.json';
-
-/**
- * Shown until why-us.json arrives, and kept if the file is broken, so the
- * section never renders without a photo.
- */
-export const DEFAULT_WHY_US_PHOTO: WhyUsPhoto = {
-  image: '/images/why-choose-us.jpg',
-  alt: `A newly installed shingle roof completed by ${SITE.name}`,
-};
 
 /**
  * A soft tinted band between two white sections: enough of a change of ground
@@ -72,7 +64,7 @@ export const DEFAULT_WHY_US_PHOTO: WhyUsPhoto = {
 export class WhyUsComponent {
   protected readonly features = FEATURES;
   protected readonly site = SITE;
-  protected readonly photo = signal<WhyUsPhoto>(DEFAULT_WHY_US_PHOTO);
+  protected readonly photo = signal<WhyUsPhoto>(WHY_US_PHOTO);
 
   constructor() {
     void this.load();

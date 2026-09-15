@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ReviewsComponent, parseReviews } from './reviews';
+import { REVIEWS } from '../../../core/content';
 
 const review = (author: string) => ({ author, text: `Review by ${author}`, rating: 5 });
 
@@ -35,7 +36,11 @@ describe('ReviewsComponent', () => {
 
   async function render(...authors: string[]): Promise<ComponentFixture<ReviewsComponent>> {
     const reviews = authors.map(review);
-    globalThis.fetch = (async () => ({ ok: true, json: async () => ({ reviews }) })) as unknown as typeof fetch;
+    return renderWith((async () => ({ ok: true, json: async () => ({ reviews }) })) as unknown as typeof fetch);
+  }
+
+  async function renderWith(fakeFetch: typeof fetch): Promise<ComponentFixture<ReviewsComponent>> {
+    globalThis.fetch = fakeFetch;
 
     await TestBed.configureTestingModule({
       imports: [ReviewsComponent],
@@ -79,6 +84,21 @@ describe('ReviewsComponent', () => {
 
     expect(buttons).toHaveLength(3);
     expect(buttons.every((button) => button.classList.contains('rm-slider__dot'))).toBe(true);
+  });
+
+  const names = (fixture: ComponentFixture<ReviewsComponent>) =>
+    slides(fixture)
+      .filter((slide) => !slide.hasAttribute('aria-hidden'))
+      .map((slide) => slide.querySelector('.rm-review__name')?.textContent);
+
+  it('shows the built-in reviews when reviews.json is missing', async () => {
+    const fixture = await renderWith((async () => ({ ok: false, status: 404 })) as unknown as typeof fetch);
+    expect(names(fixture)).toEqual(REVIEWS.map((r) => r.author));
+  });
+
+  it('shows the built-in reviews when reviews.json holds no usable review', async () => {
+    const fixture = await renderWith((async () => ({ ok: true, json: async () => ({ reviews: [] }) })) as unknown as typeof fetch);
+    expect(names(fixture)).toEqual(REVIEWS.map((r) => r.author));
   });
 
   it('shows a single review plainly, with nothing to loop or control', async () => {

@@ -12,6 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { IconComponent } from '../../../shared/icon/icon';
+import { WORK_PHOTOS } from '../../../core/content';
 import { TawkService } from '../../../core/tawk.service';
 import type { WorkPhoto } from '../../../core/models';
 
@@ -20,7 +21,8 @@ import type { WorkPhoto } from '../../../core/models';
  * build copies it next to index.html untouched. On the live site the client
  * uploads a photo to public_html/images/work/, adds it to
  * public_html/data/work.json in cPanel, and the next page load shows it, with no
- * rebuild.
+ * rebuild. If the file is missing, broken or holds no usable photo, the built-in
+ * photos in content.ts are shown instead.
  *
  * TODO(client): confirm the captions, and add the city — "Re-roof in <city>"
  * ranks and converts far better than "Finished roof" for a local services
@@ -211,9 +213,12 @@ export class WorkComponent {
       // cPanel shows up straight away rather than when the browser cache expires.
       const response = await fetch(new URL(WORK_URL, document.baseURI), { cache: 'no-cache' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      this.photos.set(parseWorkPhotos(await response.json()));
+      const parsed = parseWorkPhotos(await response.json());
+      if (!parsed.length) throw new Error('no usable photos in the file');
+      this.photos.set(parsed);
     } catch (error) {
-      console.error(`Could not load work photos from ${WORK_URL}. Is the JSON valid?`, error);
+      console.error(`Could not load work photos from ${WORK_URL}. Is the JSON valid? Showing the built-in photos.`, error);
+      this.photos.set(WORK_PHOTOS);
     }
   }
 

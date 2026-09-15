@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { afterEach, describe, expect, it } from 'vitest';
 import { WORK_TILES, WorkComponent, parseWorkPhotos } from './work';
+import { WORK_PHOTOS } from '../../../core/content';
 
 /** `count` photos, shaped the way public/data/work.json writes them. */
 const photos = (count: number, from = 0) =>
@@ -66,7 +67,11 @@ describe('WorkComponent gallery', () => {
   });
 
   async function render(count: number): Promise<ComponentFixture<WorkComponent>> {
-    globalThis.fetch = (async () => ({ ok: true, json: async () => ({ photos: photos(count) }) })) as unknown as typeof fetch;
+    return renderWith((async () => ({ ok: true, json: async () => ({ photos: photos(count) }) })) as unknown as typeof fetch);
+  }
+
+  async function renderWith(fakeFetch: typeof fetch): Promise<ComponentFixture<WorkComponent>> {
+    globalThis.fetch = fakeFetch;
 
     await TestBed.configureTestingModule({
       imports: [WorkComponent],
@@ -99,6 +104,19 @@ describe('WorkComponent gallery', () => {
     expect(tiles(fixture)).toHaveLength(WORK_TILES);
     expect(el(fixture).querySelector('.rm-work__rest:not(.rm-work__rest--tablet)')?.textContent).toContain('+7');
     expect(el(fixture).querySelector('.rm-work__rest--tablet')?.textContent).toContain('+8');
+  });
+
+  const tileImages = (fixture: ComponentFixture<WorkComponent>) =>
+    Array.from(tiles(fixture)).map((tile) => tile.querySelector('img')?.getAttribute('src'));
+
+  it('shows the built-in photos when work.json is missing', async () => {
+    const fixture = await renderWith((async () => ({ ok: false, status: 404 })) as unknown as typeof fetch);
+    expect(tileImages(fixture)).toEqual(WORK_PHOTOS.slice(0, WORK_TILES).map((photo) => photo.image));
+  });
+
+  it('shows the built-in photos when work.json holds no usable photo', async () => {
+    const fixture = await renderWith((async () => ({ ok: true, json: async () => ({ photos: [] }) })) as unknown as typeof fetch);
+    expect(tileImages(fixture)).toEqual(WORK_PHOTOS.slice(0, WORK_TILES).map((photo) => photo.image));
   });
 
   it('skips the lead tile for a handful of photos', async () => {
